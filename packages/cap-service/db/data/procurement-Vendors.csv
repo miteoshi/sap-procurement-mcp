@@ -1,0 +1,5 @@
+ID,name,taxId,country,email,status
+7c1a1e2e-1111-4a1a-8a1a-000000000001,Bosch GmbH,DE123456789,DE,procurement@bosch.example,ACTIVE
+7c1a1e2e-1111-4a1a-8a1a-000000000002,Siemens AG,DE987654321,DE,orders@siemens.example,ACTIVE
+7c1a1e2e-1111-4a1a-8a1a-000000000003,Tata Steel Ltd,IN445566778,IN,sales@tatasteel.example,ACTIVE
+7c1a1e2e-1111-4a1a-8a1a-000000000004,Reliance Industrial Supplies,IN998877665,IN,supply@reliance.example,BLOCKED

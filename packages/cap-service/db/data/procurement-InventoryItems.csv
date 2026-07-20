@@ -1,0 +1,4 @@
+ID,materialId,description,quantityOnHand,reorderPoint,unit,warehouse
+9d2b2f3f-2222-4b2b-9b2b-000000000001,MAT-1001,Hydraulic Pump Assembly,45,10,EA,WH-MUM-01
+9d2b2f3f-2222-4b2b-9b2b-000000000002,MAT-1002,Steel Sheet 2mm,8,15,KG,WH-MUM-01
+9d2b2f3f-2222-4b2b-9b2b-000000000003,MAT-1003,Control Relay Module,120,25,EA,WH-PUN-02

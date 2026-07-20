@@ -1,0 +1,87 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+
+# pnpm
+.pnpm-store/
+
+# =========================
+# Build Output
+# =========================
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# SQLite / Local Databases
+# =========================
+*.sqlite
+*.sqlite3
+db.sqlite
+*.db
+
+# =========================
+# SAP CAP
+# =========================
+gen/
+srv/_i18n/
+default-env.json
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# =========================
+# Docker
+# =========================
+.docker/
+
+# =========================
+# Temporary Files
+# =========================
+tmp/
+temp/
+.cache/
+
+# =========================
+# Testing
+# =========================
+.nyc_output/
+
+# =========================
+# Claude / MCP Local Config
+# =========================
+claude_desktop_config.json
+
+# =========================
+# Misc
+# =========================
+*.pid
+*.seed

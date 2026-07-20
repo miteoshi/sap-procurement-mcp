@@ -1,0 +1,35 @@
+{
+  "name": "cap-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Procurement CAP service - Vendors, PurchaseOrders, Inventory",
+  "engines": { "node": "^24" },
+  "dependencies": {
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "scripts": {
+    "watch": "cds watch",
+    "build": "cds build --production",
+    "deploy": "cf push"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": { "url": "db.sqlite" }
+      },
+      "[production]": {
+        "db": { "kind": "hana" },
+        "auth": { "kind": "xsuaa" }
+      },
+      "[development]": {
+        "auth": { "kind": "mocked" }
+      }
+    }
+  }
+}

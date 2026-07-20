@@ -1,0 +1,27 @@
+_schema-version: "3.1"
+ID: procurement-service
+version: 1.0.0
+
+modules:
+  - name: procurement-service-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: procurement-service-auth
+      - name: procurement-service-db
+
+resources:
+  - name: procurement-service-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+
+  - name: procurement-service-db
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: hana-cloud
+      service-plan: hdi-shared

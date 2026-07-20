@@ -1,0 +1,20 @@
+{
+  "xsappname": "procurement-service",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Read",
+      "description": "Read procurement data"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "ProcurementReader",
+      "description": "Can read vendors, POs, inventory",
+      "scope-references": ["$XSAPPNAME.Read"]
+    }
+  ],
+  "oauth2-configuration": {
+    "grant-types": ["client_credentials"]
+  }
+}
