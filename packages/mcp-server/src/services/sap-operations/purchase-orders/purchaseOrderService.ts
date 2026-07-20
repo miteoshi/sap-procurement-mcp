@@ -152,26 +152,75 @@ export class PurchaseOrderService {
     });
   }
 
-  async receiveGoods(id: string): Promise<PurchaseOrder> {
-    const po = await this.getPurchaseOrder(id);
+  async receiveGoods(idOrPoNumber: string, partialItems?: Array<{ materialId: string, quantity: number }>): Promise<PurchaseOrder> {
+    const po = await this.getPurchaseOrder(idOrPoNumber);
     if (!po) {
-      throw new Error(`Purchase order not found.`);
+      throw new Error(`Purchase order ${idOrPoNumber} not found.`);
     }
+
     if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
-      throw new Error(`Cannot receive goods for purchase order in status ${po.status}.`);
+      throw new Error(`Cannot receive goods for a purchase order in ${po.status} status.`);
     }
 
-    // TODO: Reserved for future enhancement: Partial Receiving
-    // e.g. receiveGoods(poId, receivedItems) -> sets status to PARTIALLY_RECEIVED
+    if (!po.lineItems || po.lineItems.length === 0) {
+      throw new Error(`Purchase order ${idOrPoNumber} has no line items to receive.`);
+    }
 
-    if (po.lineItems && po.lineItems.length > 0) {
-      for (const item of po.lineItems) {
-        await this.inventoryService.addStock(item.material_ID, item.quantity);
+    // Map partialItems to a dictionary for fast lookup if provided
+    const partialMap = new Map<string, number>();
+    if (partialItems) {
+      for (const p of partialItems) {
+        // Resolve materialId to UUID
+        const inventoryItem = await this.inventoryService.checkInventory(p.materialId);
+        if (!inventoryItem) {
+          throw new Error(`Material '${p.materialId}' not found in inventory.`);
+        }
+        partialMap.set(inventoryItem.ID, p.quantity);
       }
     }
 
-    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
-      status: 'RECEIVED'
+    let allFullyReceived = true;
+
+    for (const item of po.lineItems) {
+      let qtyToReceive = 0;
+      
+      const currentReceived = item.receivedQuantity ?? 0;
+      const remaining = item.quantity - currentReceived;
+
+      if (partialItems) {
+        // Only receive what was explicitly requested for this line item
+        const requestedQty = partialMap.get(item.material_ID) ?? 0;
+        if (requestedQty > remaining) {
+          throw new Error(`Cannot receive ${requestedQty} for material UUID ${item.material_ID}. Only ${remaining} pending.`);
+        }
+        qtyToReceive = requestedQty;
+      } else {
+        // Receive everything remaining
+        qtyToReceive = remaining;
+      }
+
+      if (qtyToReceive > 0) {
+        // Update Inventory
+        await this.inventoryService.addStock(item.material_ID, qtyToReceive);
+
+        // Update Line Item
+        await this.client.patch(`/POLineItems(${item.ID})`, {
+          receivedQuantity: currentReceived + qtyToReceive
+        });
+      }
+
+      const newReceived = currentReceived + qtyToReceive;
+      if (newReceived < item.quantity) {
+        allFullyReceived = false;
+      }
+    }
+
+    const newStatus = allFullyReceived ? 'RECEIVED' : 'PARTIALLY_RECEIVED';
+
+    const result = await this.client.patch<PurchaseOrder>(`/PurchaseOrders(${po.ID})`, {
+      status: newStatus
     });
+
+    return result;
   }
 }

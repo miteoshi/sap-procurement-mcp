@@ -30,6 +30,7 @@ entity POLineItems : cuid {
   purchaseOrder : Association to PurchaseOrders @mandatory;
   material      : Association to InventoryItems @mandatory;
   quantity      : Integer @mandatory;
+  receivedQuantity : Integer default 0;
   unitPrice     : Decimal(15,2);
 }
 

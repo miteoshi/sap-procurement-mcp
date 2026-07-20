@@ -236,17 +236,12 @@ describe('ProcurementService', () => {
   });
 
   it('receiveGoods updates status to RECEIVED and adds stock', async () => {
-    // client.get must return an object that acts like a PO and like an InventoryItem
-    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ material_ID: 'mat-1', quantity: 5 }] }] });
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 5, receivedQuantity: 0 }] }] });
     const service = new ProcurementService(client);
     
-    // For inventory get, it returns the same array structure, so we need to redefine get dynamically or just ensure item.quantityOnHand resolves gracefully.
-    // Actually, mockClient returns { value: [...] } for everything, but getPurchaseOrder extracts value[0].
-    // inventoryService.addStock calls client.get without $filter so it expects a direct object, not {value: []}.
-    // Let's redefine get for this test.
     (client.get as any).mockImplementation((path: string) => {
       if (path === '/PurchaseOrders') {
-        return Promise.resolve({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ material_ID: 'mat-1', quantity: 5 }] }] });
+        return Promise.resolve({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 5, receivedQuantity: 0 }] }] });
       }
       return Promise.resolve({ quantityOnHand: 10 });
     });
@@ -260,10 +255,50 @@ describe('ProcurementService', () => {
       expect.objectContaining({ quantityOnHand: 15 }),
     );
     expect(client.patch).toHaveBeenCalledWith(
+      "/POLineItems(li-1)",
+      expect.objectContaining({ receivedQuantity: 5 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
       "/PurchaseOrders(po-uuid)",
       expect.objectContaining({ status: 'RECEIVED' }),
     );
     expect(result.status).toBe('RECEIVED');
+  });
+
+  it('receiveGoods with partial items sets status to PARTIALLY_RECEIVED', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 10, receivedQuantity: 2 }] }] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/PurchaseOrders') {
+        return Promise.resolve({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 10, receivedQuantity: 2 }] }] });
+      }
+      if (path.startsWith('/InventoryItems(')) {
+        return Promise.resolve({ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 });
+      }
+      if (path.includes('InventoryItems')) {
+        return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 }] });
+      }
+      return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 }] });
+    });
+    
+    (client.patch as any).mockResolvedValue({ ID: 'po-uuid', status: 'PARTIALLY_RECEIVED' });
+
+    const result = await service.receiveGoods('po-uuid', [{ materialId: 'M1', quantity: 3 }]);
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/InventoryItems(mat-1)",
+      expect.objectContaining({ quantityOnHand: 8 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/POLineItems(li-1)",
+      expect.objectContaining({ receivedQuantity: 5 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'PARTIALLY_RECEIVED' }),
+    );
+    expect(result.status).toBe('PARTIALLY_RECEIVED');
   });
 
   it('getSupplierSpend aggregates total amount correctly', async () => {

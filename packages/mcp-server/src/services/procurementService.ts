@@ -89,8 +89,8 @@ export class ProcurementService {
     return this.purchaseOrderService.cancelPurchaseOrder(id);
   }
 
-  async receiveGoods(id: string): Promise<PurchaseOrder> {
-    return this.purchaseOrderService.receiveGoods(id);
+  async receiveGoods(idOrPoNumber: string, partialItems?: Array<{ materialId: string, quantity: number }>): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.receiveGoods(idOrPoNumber, partialItems);
   }
 
   // --- Inventory Methods ---

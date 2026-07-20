@@ -27,6 +27,7 @@ export interface POLineItem {
   purchaseOrder_ID: string;
   material_ID: string;
   quantity: number;
+  receivedQuantity?: number;
   unitPrice: number;
 }
 

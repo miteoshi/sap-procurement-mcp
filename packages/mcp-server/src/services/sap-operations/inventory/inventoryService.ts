@@ -10,7 +10,7 @@ export class InventoryService {
       $filter: `materialId eq '${escapeOData(materialId)}'`,
       $top: '1',
     });
-    return result.value[0];
+    return result.value ? result.value[0] : undefined;
   }
 
   /**
