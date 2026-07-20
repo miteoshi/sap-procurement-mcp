@@ -1,10 +1,16 @@
+export enum VendorStatus {
+  ACTIVE = 'ACTIVE',
+  BLOCKED = 'BLOCKED',
+  INACTIVE = 'INACTIVE',
+}
+
 export interface Vendor {
   ID: string;
   name: string;
   taxId: string;
   country: string;
   email: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'INACTIVE';
+  status: VendorStatus;
 }
 
 

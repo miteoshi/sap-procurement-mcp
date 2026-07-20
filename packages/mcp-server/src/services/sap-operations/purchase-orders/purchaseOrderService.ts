@@ -1,6 +1,6 @@
-import type { CapClient } from '../clients/capClient.js';
-import type { ODataResponse, PurchaseOrder } from '../types/procurement.js';
-import { escapeOData } from '../utils/odataUtils.js';
+import type { CapClient } from '../../../clients/capClient.js';
+import type { ODataResponse, PurchaseOrder } from '../../../types/procurement.js';
+import { escapeOData } from '../../../utils/odataUtils.js';
 
 export class PurchaseOrderService {
   constructor(private readonly client: CapClient) {}

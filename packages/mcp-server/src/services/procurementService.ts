@@ -1,8 +1,9 @@
 import { CapClient } from '../clients/capClient.js';
 import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters } from '../types/procurement.js';
-import { VendorService } from './vendorService.js';
-import { PurchaseOrderService } from './purchaseOrderService.js';
-import { InventoryService } from './inventoryService.js';
+import { VendorService } from './sap-operations/vendors/vendorService.js';
+import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
+import { InventoryService } from './sap-operations/inventory/inventoryService.js';
+import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
 
 /**
  * Facade service that delegates to domain-specific services.
@@ -13,11 +14,13 @@ export class ProcurementService {
   private readonly vendorService: VendorService;
   private readonly purchaseOrderService: PurchaseOrderService;
   private readonly inventoryService: InventoryService;
+  private readonly aiVendorService: AiVendorService;
 
   constructor(client: CapClient = new CapClient()) {
     this.vendorService = new VendorService(client);
     this.purchaseOrderService = new PurchaseOrderService(client);
     this.inventoryService = new InventoryService(client);
+    this.aiVendorService = new AiVendorService(client);
   }
 
   // --- Vendor Methods ---
@@ -37,16 +40,24 @@ export class ProcurementService {
     return this.vendorService.updateVendor(id, data);
   }
 
+  async deleteVendor(id: string): Promise<Vendor> {
+    return this.vendorService.deleteVendor(id);
+  }
+
   async blockVendor(id: string): Promise<Vendor> {
     return this.vendorService.blockVendor(id);
   }
 
+  async unblockVendor(id: string): Promise<Vendor> {
+    return this.vendorService.unblockVendor(id);
+  }
+
   async getSupplierSpend(vendorId: string): Promise<{ totalSpend: number; currency: string }> {
-    return this.vendorService.getSupplierSpend(vendorId);
+    return this.aiVendorService.getSupplierSpend(vendorId);
   }
 
   async getVendorPerformance(vendorId: string): Promise<{ totalOrders: number; fulfilledOrders: number; cancelledOrders: number }> {
-    return this.vendorService.getVendorPerformance(vendorId);
+    return this.aiVendorService.getVendorPerformance(vendorId);
   }
 
   // --- Purchase Order Methods ---

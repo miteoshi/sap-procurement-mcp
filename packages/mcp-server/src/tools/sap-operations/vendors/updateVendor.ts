@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import type { ProcurementService } from '../services/procurementService.js';
-import { withCorrelation } from '../config/logger.js';
+import { VendorStatus } from '../../../types/procurement.js';
+import type { ProcurementService } from '../../../services/procurementService.js';
+import { withCorrelation } from '../../../config/logger.js';
 import { randomUUID } from 'node:crypto';
 
 export const updateVendorInputSchema = z.object({
@@ -9,7 +10,7 @@ export const updateVendorInputSchema = z.object({
   taxId: z.string().min(2).optional().describe("Vendor tax ID"),
   country: z.string().length(2).optional().describe("2-letter country code, e.g. 'US' or 'DE'"),
   email: z.string().email().optional().describe("Vendor contact email"),
-  status: z.enum(['ACTIVE', 'BLOCKED', 'INACTIVE']).optional().describe("Vendor status"),
+  status: z.nativeEnum(VendorStatus).optional().describe("Vendor status"),
 });
 
 export const updateVendorTool = {

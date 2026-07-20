@@ -5,29 +5,41 @@ import { z } from 'zod';
 import 'dotenv/config';
 
 import { ProcurementService } from './services/procurementService.js';
-import { searchVendorsTool } from './tools/searchVendors.js';
-import { getVendorTool } from './tools/getVendor.js';
-import { vendorSummaryTool } from './tools/vendorSummary.js';
-import { createVendorTool } from './tools/createVendor.js';
-import { updateVendorTool } from './tools/updateVendor.js';
-import { blockVendorTool } from './tools/blockVendor.js';
-import { listRecentOrdersTool } from './tools/listRecentOrders.js';
-import { getPoStatusTool } from './tools/getPoStatus.js';
-import { checkInventoryTool } from './tools/checkInventory.js';
+import { searchVendorsTool } from './tools/sap-operations/vendors/searchVendors.js';
+import { getVendorTool } from './tools/sap-operations/vendors/getVendor.js';
+import { createVendorTool } from './tools/sap-operations/vendors/createVendor.js';
+import { updateVendorTool } from './tools/sap-operations/vendors/updateVendor.js';
+import { blockVendorTool } from './tools/sap-operations/vendors/blockVendor.js';
+import { unblockVendorTool } from './tools/sap-operations/vendors/unblockVendor.js';
+import { deleteVendorTool } from './tools/sap-operations/vendors/deleteVendor.js';
+import { listRecentOrdersTool } from './tools/sap-operations/purchase-orders/listRecentOrders.js';
+import { getPoStatusTool } from './tools/sap-operations/purchase-orders/getPoStatus.js';
+import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
+
+import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
+import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
+import { supplierSpendSummaryTool } from './tools/ai-operations/vendors/supplierSpendSummary.js';
 import { CapClientError } from './clients/capClient.js';
 import { logger } from './config/logger.js';
 
 const service = new ProcurementService();
 const tools = [
+  // SAP Operations
   searchVendorsTool,
   getVendorTool,
-  vendorSummaryTool,
   createVendorTool,
   updateVendorTool,
   blockVendorTool,
+  unblockVendorTool,
+  deleteVendorTool,
   listRecentOrdersTool,
   getPoStatusTool,
   checkInventoryTool,
+
+  // AI Operations
+  vendorSummaryTool,
+  supplierPerformanceTool,
+  supplierSpendSummaryTool,
 ];
 
 const server = new Server(

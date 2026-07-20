@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { ProcurementService } from '../services/procurementService.js';
-import { withCorrelation } from '../config/logger.js';
+import type { ProcurementService } from '../../../services/procurementService.js';
+import { withCorrelation } from '../../../config/logger.js';
 import { randomUUID } from 'node:crypto';
 
 export const searchVendorsInputSchema = z.object({
