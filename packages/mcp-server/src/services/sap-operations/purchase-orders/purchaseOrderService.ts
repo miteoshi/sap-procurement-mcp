@@ -1,5 +1,5 @@
 import type { CapClient } from '../../../clients/capClient.js';
-import type { ODataResponse, PurchaseOrder, PurchaseOrderFilters } from '../../../types/procurement.js';
+import type { ODataResponse, PurchaseOrder, PurchaseOrderFilters, POLineItem } from '../../../types/procurement.js';
 import { escapeOData } from '../../../utils/odataUtils.js';
 
 export class PurchaseOrderService {
@@ -24,6 +24,7 @@ export class PurchaseOrderService {
     const queryParams: Record<string, string> = {
       $orderby: 'orderDate desc',
       $top: String(filters.limit || 50),
+      $expand: 'lineItems',
     };
 
     if (filterClauses.length > 0) {
@@ -49,12 +50,34 @@ export class PurchaseOrderService {
     const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
       $filter: `${filterField} eq '${escapeOData(idOrPoNumber)}'`,
       $top: '1',
+      $expand: 'lineItems',
     });
     return result.value[0];
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: any[] }): Promise<PurchaseOrder> {
-    return this.client.post<PurchaseOrder>('/PurchaseOrders', data);
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ material_ID: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+    const payload: any = {
+      vendor_ID: data.vendor_ID,
+      currency: data.currency,
+      poNumber: `PO-${Date.now()}`,
+      orderDate: new Date().toISOString().split('T')[0],
+      status: 'PENDING',
+      totalAmount: 0
+    };
+    if (data.items && data.items.length > 0) {
+      payload.lineItems = data.items;
+      payload.totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+    }
+    return this.client.post<PurchaseOrder>('/PurchaseOrders', payload);
+  }
+
+  async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
+    return this.client.post<POLineItem>('/POLineItems', {
+      purchaseOrder_ID: poId,
+      material_ID: materialId,
+      quantity,
+      unitPrice
+    });
   }
 
   async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {

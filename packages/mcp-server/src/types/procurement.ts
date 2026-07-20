@@ -22,6 +22,14 @@ export enum PurchaseOrderStatus {
   CANCELLED = 'CANCELLED'
 }
 
+export interface POLineItem {
+  ID: string;
+  purchaseOrder_ID: string;
+  material_ID: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export interface PurchaseOrder {
   ID: string;
   poNumber: string;
@@ -30,6 +38,7 @@ export interface PurchaseOrder {
   status: PurchaseOrderStatus;
   currency: string;
   totalAmount: number;
+  lineItems?: POLineItem[];
 }
 
 export interface InventoryItem {

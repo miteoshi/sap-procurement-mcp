@@ -117,6 +117,46 @@ describe('ProcurementService', () => {
     expect(result.ID).toBe('po-uuid');
   });
 
+  it('createPurchaseOrder with items maps to lineItems and calculates total', async () => {
+    const client = mockClient({ ID: 'po-uuid' });
+    const service = new ProcurementService(client);
+
+    await service.createPurchaseOrder({
+      vendor_ID: 'v1',
+      currency: 'USD',
+      items: [
+        { material_ID: 'M1', quantity: 2, unitPrice: 50 },
+        { material_ID: 'M2', quantity: 1, unitPrice: 100 }
+      ]
+    });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({
+        vendor_ID: 'v1',
+        currency: 'USD',
+        totalAmount: 200,
+        lineItems: [
+          { material_ID: 'M1', quantity: 2, unitPrice: 50 },
+          { material_ID: 'M2', quantity: 1, unitPrice: 100 }
+        ]
+      }),
+    );
+  });
+
+  it('addPOLineItem sends POST request to /POLineItems', async () => {
+    const client = mockClient({ ID: 'li-uuid' });
+    const service = new ProcurementService(client);
+
+    const result = await service.addPOLineItem('po-uuid', 'mat-1', 5, 20);
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/POLineItems',
+      { purchaseOrder_ID: 'po-uuid', material_ID: 'mat-1', quantity: 5, unitPrice: 20 }
+    );
+    expect(result.ID).toBe('li-uuid');
+  });
+
   it('approvePurchaseOrder updates status to APPROVED', async () => {
     const client = mockClient({ ID: 'po-uuid', status: 'APPROVED' });
     const service = new ProcurementService(client);

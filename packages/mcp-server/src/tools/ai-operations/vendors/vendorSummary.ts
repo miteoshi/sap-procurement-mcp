@@ -23,7 +23,7 @@ export const vendorSummaryTool = {
     }
 
     const [recentOrders, spend, performance] = await Promise.all([
-      service.listRecentOrders(input.vendor_id, 5),
+      service.searchPurchaseOrders({ vendorId: input.vendor_id, limit: 5 }),
       service.getSupplierSpend(input.vendor_id),
       service.getVendorPerformance(input.vendor_id)
     ]);

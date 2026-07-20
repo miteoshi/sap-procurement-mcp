@@ -1,5 +1,5 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem } from '../types/procurement.js';
 import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
@@ -70,8 +70,12 @@ export class ProcurementService {
     return this.purchaseOrderService.getPurchaseOrder(idOrPoNumber);
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: any[] }): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ material_ID: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
     return this.purchaseOrderService.createPurchaseOrder(data);
+  }
+
+  async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
+    return this.purchaseOrderService.addPOLineItem(poId, materialId, quantity, unitPrice);
   }
 
   async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {

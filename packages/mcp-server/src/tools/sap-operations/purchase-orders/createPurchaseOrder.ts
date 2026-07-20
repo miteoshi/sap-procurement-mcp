@@ -6,7 +6,11 @@ import { randomUUID } from 'node:crypto';
 export const createPurchaseOrderInputSchema = z.object({
   vendor_ID: z.string().uuid().describe("The UUID of the vendor"),
   currency: z.string().length(3).default('USD').describe("3-letter currency code, e.g. 'USD'"),
-  items: z.array(z.any()).optional().describe("Array of line items (optional for now)"),
+  items: z.array(z.object({
+    material_ID: z.string().describe("The material ID, e.g. 'MAT-1001'"),
+    quantity: z.number().int().positive().describe("Quantity of the material"),
+    unitPrice: z.number().positive().describe("Price per unit")
+  })).optional().describe("Array of line items to create with the PO"),
 });
 
 export const createPurchaseOrderTool = {
