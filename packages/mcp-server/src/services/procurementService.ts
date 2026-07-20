@@ -66,8 +66,24 @@ export class ProcurementService {
     return this.purchaseOrderService.searchPurchaseOrders(filters);
   }
 
-  async getPoStatus(poNumber: string): Promise<PurchaseOrder | undefined> {
-    return this.purchaseOrderService.getPoStatus(poNumber);
+  async getPurchaseOrder(idOrPoNumber: string): Promise<PurchaseOrder | undefined> {
+    return this.purchaseOrderService.getPurchaseOrder(idOrPoNumber);
+  }
+
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: any[] }): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.createPurchaseOrder(data);
+  }
+
+  async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.approvePurchaseOrder(id);
+  }
+
+  async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.cancelPurchaseOrder(id);
+  }
+
+  async receiveGoods(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.receiveGoods(id);
   }
 
   // --- Inventory Methods ---

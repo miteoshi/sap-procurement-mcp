@@ -91,6 +91,71 @@ describe('ProcurementService', () => {
     );
   });
 
+  it('getPurchaseOrder retrieves by poNumber', async () => {
+    const client = mockClient({ value: [{ poNumber: 'PO-123' }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.getPurchaseOrder('PO-123');
+
+    expect(client.get).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({ $filter: "poNumber eq 'PO-123'", $top: '1' }),
+    );
+    expect(result?.poNumber).toBe('PO-123');
+  });
+
+  it('createPurchaseOrder sends POST request', async () => {
+    const client = mockClient({ ID: 'po-uuid', poNumber: 'PO-1000' });
+    const service = new ProcurementService(client);
+
+    const result = await service.createPurchaseOrder({ vendor_ID: 'v1', currency: 'USD' });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({ vendor_ID: 'v1', currency: 'USD' }),
+    );
+    expect(result.ID).toBe('po-uuid');
+  });
+
+  it('approvePurchaseOrder updates status to APPROVED', async () => {
+    const client = mockClient({ ID: 'po-uuid', status: 'APPROVED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.approvePurchaseOrder('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'APPROVED' }),
+    );
+    expect(result.status).toBe('APPROVED');
+  });
+
+  it('cancelPurchaseOrder updates status to CANCELLED', async () => {
+    const client = mockClient({ ID: 'po-uuid', status: 'CANCELLED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.cancelPurchaseOrder('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'CANCELLED' }),
+    );
+    expect(result.status).toBe('CANCELLED');
+  });
+
+  it('receiveGoods updates status to RECEIVED', async () => {
+    const client = mockClient({ ID: 'po-uuid', status: 'RECEIVED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.receiveGoods('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'RECEIVED' }),
+    );
+    expect(result.status).toBe('RECEIVED');
+  });
+
   it('getSupplierSpend aggregates total amount correctly', async () => {
     const client = mockClient({
       value: [
@@ -126,7 +191,7 @@ describe('ProcurementService', () => {
     const client = mockClient({ value: [] });
     const service = new ProcurementService(client);
 
-    await service.getPoStatus("PO-O'Brien-01");
+    await service.getPurchaseOrder("PO-O'Brien-01");
 
     const callArgs = (client.get as any).mock.calls[0][1];
     expect(callArgs.$filter).toContain("PO-O''Brien-01");

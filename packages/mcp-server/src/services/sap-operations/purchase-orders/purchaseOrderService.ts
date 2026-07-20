@@ -41,4 +41,37 @@ export class PurchaseOrderService {
     });
     return result.value[0];
   }
+
+  async getPurchaseOrder(idOrPoNumber: string): Promise<PurchaseOrder | undefined> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrPoNumber);
+    const filterField = isUuid ? 'ID' : 'poNumber';
+    
+    const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
+      $filter: `${filterField} eq '${escapeOData(idOrPoNumber)}'`,
+      $top: '1',
+    });
+    return result.value[0];
+  }
+
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: any[] }): Promise<PurchaseOrder> {
+    return this.client.post<PurchaseOrder>('/PurchaseOrders', data);
+  }
+
+  async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
+      status: 'APPROVED'
+    });
+  }
+
+  async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
+      status: 'CANCELLED'
+    });
+  }
+
+  async receiveGoods(id: string): Promise<PurchaseOrder> {
+    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
+      status: 'RECEIVED'
+    });
+  }
 }

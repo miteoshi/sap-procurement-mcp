@@ -13,7 +13,11 @@ import { blockVendorTool } from './tools/sap-operations/vendors/blockVendor.js';
 import { unblockVendorTool } from './tools/sap-operations/vendors/unblockVendor.js';
 import { deactivateVendorTool } from './tools/sap-operations/vendors/deactivateVendor.js';
 import { searchPurchaseOrdersTool } from './tools/sap-operations/purchase-orders/searchPurchaseOrders.js';
-import { getPoStatusTool } from './tools/sap-operations/purchase-orders/getPoStatus.js';
+import { getPurchaseOrderTool } from './tools/sap-operations/purchase-orders/getPurchaseOrder.js';
+import { createPurchaseOrderTool } from './tools/sap-operations/purchase-orders/createPurchaseOrder.js';
+import { approvePurchaseOrderTool } from './tools/sap-operations/purchase-orders/approvePurchaseOrder.js';
+import { cancelPurchaseOrderTool } from './tools/sap-operations/purchase-orders/cancelPurchaseOrder.js';
+import { receiveGoodsTool } from './tools/sap-operations/purchase-orders/receiveGoods.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
 
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
@@ -33,7 +37,11 @@ const tools = [
   unblockVendorTool,
   deactivateVendorTool,
   searchPurchaseOrdersTool,
-  getPoStatusTool,
+  getPurchaseOrderTool,
+  createPurchaseOrderTool,
+  approvePurchaseOrderTool,
+  cancelPurchaseOrderTool,
+  receiveGoodsTool,
   checkInventoryTool,
 
   // AI Operations
