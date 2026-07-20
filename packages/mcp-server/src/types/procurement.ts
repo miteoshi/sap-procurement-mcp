@@ -7,6 +7,7 @@ export interface Vendor {
   status: 'ACTIVE' | 'BLOCKED' | 'INACTIVE';
 }
 
+
 export interface PurchaseOrder {
   ID: string;
   poNumber: string;
@@ -29,4 +30,14 @@ export interface InventoryItem {
 
 export interface ODataResponse<T> {
   value: T[];
+}
+
+
+
+//Filters
+export interface VendorFilters {
+  name?: string;
+  country?: string;
+  status?: string;
+  limit?: number;
 }

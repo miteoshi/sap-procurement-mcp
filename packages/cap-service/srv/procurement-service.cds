@@ -9,7 +9,6 @@ using procurement as db from '../db/schema';
 service ProcurementService {
 
   @requires: 'authenticated-user'
-  @readonly
   entity Vendors as projection on db.Vendors {
     ID, name, taxId, country, email, status
   };

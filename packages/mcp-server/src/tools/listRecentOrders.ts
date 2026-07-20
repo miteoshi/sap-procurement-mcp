@@ -7,7 +7,7 @@ export const listRecentOrdersInputSchema = z.object({
   vendor_id: z
     .string()
     .uuid()
-    .describe('vendor_id obtained from find_vendor - do not guess this value'),
+    .describe('vendor_id obtained from search_vendors - do not guess this value'),
   limit: z.number().int().min(1).max(50).default(10),
 });
 
@@ -15,7 +15,7 @@ export const listRecentOrdersTool = {
   name: 'list_recent_orders',
   description:
     'List recent purchase orders for a vendor. Requires vendor_id - if you only ' +
-    'have a vendor name, call find_vendor first to get the vendor_id. Returns ' +
+    'have a vendor name, call search_vendors first to get the vendor_id. Returns ' +
     'po_number values usable with get_po_status.',
   inputSchema: listRecentOrdersInputSchema,
   handler: async (

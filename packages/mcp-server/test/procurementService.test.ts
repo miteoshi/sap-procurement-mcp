@@ -3,21 +3,80 @@ import { ProcurementService } from '../src/services/procurementService.js';
 import type { CapClient } from '../src/clients/capClient.js';
 
 function mockClient(returnValue: unknown): CapClient {
-  return { get: vi.fn().mockResolvedValue(returnValue) } as unknown as CapClient;
+  return { 
+    get: vi.fn().mockResolvedValue(returnValue),
+    post: vi.fn().mockResolvedValue(returnValue),
+    patch: vi.fn().mockResolvedValue(returnValue)
+  } as unknown as CapClient;
 }
 
 describe('ProcurementService', () => {
-  it('findVendorByName filters and caps results', async () => {
+  it('searchVendors filters and caps results', async () => {
     const client = mockClient({ value: [{ ID: 'v1', name: 'Bosch GmbH' }] });
     const service = new ProcurementService(client);
 
-    const result = await service.findVendorByName('Bosch');
+    const result = await service.searchVendors({ name: 'Bosch', country: 'DE', limit: 5 });
 
     expect(client.get).toHaveBeenCalledWith(
       '/Vendors',
-      expect.objectContaining({ $filter: expect.stringContaining('Bosch') }),
+      expect.objectContaining({ 
+        $filter: "contains(name,'Bosch') and country eq 'DE'",
+        $top: '5'
+      }),
     );
     expect(result).toHaveLength(1);
+  });
+
+  it('getVendor returns a single vendor by ID', async () => {
+    const client = mockClient({ value: [{ ID: 'v1', name: 'Bosch' }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.getVendor('v1');
+
+    expect(client.get).toHaveBeenCalledWith(
+      '/Vendors',
+      expect.objectContaining({ $filter: "ID eq 'v1'", $top: '1' }),
+    );
+    expect(result?.name).toBe('Bosch');
+  });
+
+  it('createVendor sends POST request', async () => {
+    const client = mockClient({ ID: 'new-uuid', name: 'New Vendor' });
+    const service = new ProcurementService(client);
+
+    const result = await service.createVendor({ name: 'New Vendor', country: 'US', taxId: '123', email: 'test@test.com', status: 'ACTIVE' });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/Vendors',
+      expect.objectContaining({ name: 'New Vendor', country: 'US' }),
+    );
+    expect(result.ID).toBe('new-uuid');
+  });
+
+  it('updateVendor sends PATCH request', async () => {
+    const client = mockClient({ ID: 'v1', name: 'Updated Vendor' });
+    const service = new ProcurementService(client);
+
+    const result = await service.updateVendor('v1', { name: 'Updated Vendor' });
+
+    expect(client.patch).toHaveBeenCalledWith(
+      '/Vendors(v1)',
+      expect.objectContaining({ name: 'Updated Vendor' }),
+    );
+    expect(result.name).toBe('Updated Vendor');
+  });
+
+  it('blockVendor calls updateVendor with BLOCKED status', async () => {
+    const client = mockClient({ ID: 'v1', status: 'BLOCKED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.blockVendor('v1');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      '/Vendors(v1)',
+      expect.objectContaining({ status: 'BLOCKED' }),
+    );
+    expect(result.status).toBe('BLOCKED');
   });
 
   it('listRecentOrders orders by date descending', async () => {
@@ -30,6 +89,37 @@ describe('ProcurementService', () => {
       '/PurchaseOrders',
       expect.objectContaining({ $orderby: 'orderDate desc', $top: '5' }),
     );
+  });
+
+  it('getSupplierSpend aggregates total amount correctly', async () => {
+    const client = mockClient({
+      value: [
+        { totalAmount: 100, currency: 'USD', status: 'RECEIVED' },
+        { totalAmount: 250, currency: 'USD', status: 'PENDING' },
+      ],
+    });
+    const service = new ProcurementService(client);
+
+    const result = await service.getSupplierSpend('v1');
+    expect(result.totalSpend).toBe(350);
+    expect(result.currency).toBe('USD');
+  });
+
+  it('getVendorPerformance computes metrics correctly', async () => {
+    const client = mockClient({
+      value: [
+        { status: 'RECEIVED' },
+        { status: 'RECEIVED' },
+        { status: 'PENDING' },
+        { status: 'CANCELLED' },
+      ],
+    });
+    const service = new ProcurementService(client);
+
+    const result = await service.getVendorPerformance('v1');
+    expect(result.totalOrders).toBe(4);
+    expect(result.fulfilledOrders).toBe(2);
+    expect(result.cancelledOrders).toBe(1);
   });
 
   it('escapes single quotes in OData filter values', async () => {

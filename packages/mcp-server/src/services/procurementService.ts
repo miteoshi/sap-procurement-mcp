@@ -1,50 +1,65 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, ODataResponse, PurchaseOrder, Vendor } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters } from '../types/procurement.js';
+import { VendorService } from './vendorService.js';
+import { PurchaseOrderService } from './purchaseOrderService.js';
+import { InventoryService } from './inventoryService.js';
 
 /**
- * Tools stay thin (parse input, call this, format output). All actual
- * business logic - filters, OData query shaping - lives here, so it
- * can be unit tested without spinning up an MCP server at all.
+ * Facade service that delegates to domain-specific services.
+ * This keeps the existing MCP tools intact while segregating 
+ * backend logic into smaller, maintainable files.
  */
 export class ProcurementService {
-  constructor(private readonly client: CapClient = new CapClient()) {}
+  private readonly vendorService: VendorService;
+  private readonly purchaseOrderService: PurchaseOrderService;
+  private readonly inventoryService: InventoryService;
 
-  async findVendorByName(name: string): Promise<Vendor[]> {
-    const result = await this.client.get<ODataResponse<Vendor>>('/Vendors', {
-      $filter: `contains(name,'${this.escapeOData(name)}')`,
-      $top: '5',
-    });
-    return result.value;
+  constructor(client: CapClient = new CapClient()) {
+    this.vendorService = new VendorService(client);
+    this.purchaseOrderService = new PurchaseOrderService(client);
+    this.inventoryService = new InventoryService(client);
   }
 
+  // --- Vendor Methods ---
+  async searchVendors(filters: VendorFilters): Promise<Vendor[]> {
+    return this.vendorService.searchVendors(filters);
+  }
+
+  async getVendor(id: string): Promise<Vendor | undefined> {
+    return this.vendorService.getVendor(id);
+  }
+
+  async createVendor(data: Omit<Vendor, 'ID'>): Promise<Vendor> {
+    return this.vendorService.createVendor(data);
+  }
+
+  async updateVendor(id: string, data: Partial<Vendor>): Promise<Vendor> {
+    return this.vendorService.updateVendor(id, data);
+  }
+
+  async blockVendor(id: string): Promise<Vendor> {
+    return this.vendorService.blockVendor(id);
+  }
+
+  async getSupplierSpend(vendorId: string): Promise<{ totalSpend: number; currency: string }> {
+    return this.vendorService.getSupplierSpend(vendorId);
+  }
+
+  async getVendorPerformance(vendorId: string): Promise<{ totalOrders: number; fulfilledOrders: number; cancelledOrders: number }> {
+    return this.vendorService.getVendorPerformance(vendorId);
+  }
+
+  // --- Purchase Order Methods ---
   async listRecentOrders(vendorId: string, limit = 10): Promise<PurchaseOrder[]> {
-    const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
-      $filter: `vendor_ID eq '${this.escapeOData(vendorId)}'`,
-      $orderby: 'orderDate desc',
-      $top: String(limit),
-    });
-    return result.value;
+    return this.purchaseOrderService.listRecentOrders(vendorId, limit);
   }
 
   async getPoStatus(poNumber: string): Promise<PurchaseOrder | undefined> {
-    const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
-      $filter: `poNumber eq '${this.escapeOData(poNumber)}'`,
-      $top: '1',
-    });
-    return result.value[0];
+    return this.purchaseOrderService.getPoStatus(poNumber);
   }
 
+  // --- Inventory Methods ---
   async checkInventory(materialId: string): Promise<InventoryItem | undefined> {
-    const result = await this.client.get<ODataResponse<InventoryItem>>('/InventoryItems', {
-      $filter: `materialId eq '${this.escapeOData(materialId)}'`,
-      $top: '1',
-    });
-    return result.value[0];
-  }
-
-  // OData $filter string literals need single quotes escaped - basic
-  // injection hygiene since these values ultimately come from LLM input.
-  private escapeOData(value: string): string {
-    return value.replace(/'/g, "''");
+    return this.inventoryService.checkInventory(materialId);
   }
 }

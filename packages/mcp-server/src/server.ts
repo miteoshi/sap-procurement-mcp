@@ -5,7 +5,12 @@ import { z } from 'zod';
 import 'dotenv/config';
 
 import { ProcurementService } from './services/procurementService.js';
-import { findVendorTool } from './tools/findVendor.js';
+import { searchVendorsTool } from './tools/searchVendors.js';
+import { getVendorTool } from './tools/getVendor.js';
+import { vendorSummaryTool } from './tools/vendorSummary.js';
+import { createVendorTool } from './tools/createVendor.js';
+import { updateVendorTool } from './tools/updateVendor.js';
+import { blockVendorTool } from './tools/blockVendor.js';
 import { listRecentOrdersTool } from './tools/listRecentOrders.js';
 import { getPoStatusTool } from './tools/getPoStatus.js';
 import { checkInventoryTool } from './tools/checkInventory.js';
@@ -13,7 +18,17 @@ import { CapClientError } from './clients/capClient.js';
 import { logger } from './config/logger.js';
 
 const service = new ProcurementService();
-const tools = [findVendorTool, listRecentOrdersTool, getPoStatusTool, checkInventoryTool];
+const tools = [
+  searchVendorsTool,
+  getVendorTool,
+  vendorSummaryTool,
+  createVendorTool,
+  updateVendorTool,
+  blockVendorTool,
+  listRecentOrdersTool,
+  getPoStatusTool,
+  checkInventoryTool,
+];
 
 const server = new Server(
   { name: 'procurement-mcp', version: '1.0.0' },
