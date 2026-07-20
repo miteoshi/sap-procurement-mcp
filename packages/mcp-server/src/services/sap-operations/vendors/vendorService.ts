@@ -45,7 +45,7 @@ export class VendorService {
     return this.client.patch<Vendor>(`/Vendors(${escapeOData(id)})`, data);
   }
 
-  async deleteVendor(id: string): Promise<Vendor> {
+  async deactivate_vendor(id: string): Promise<Vendor> {
     return this.updateVendor(id, { status: VendorStatus.INACTIVE });
   }
 

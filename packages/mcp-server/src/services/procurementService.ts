@@ -40,8 +40,8 @@ export class ProcurementService {
     return this.vendorService.updateVendor(id, data);
   }
 
-  async deleteVendor(id: string): Promise<Vendor> {
-    return this.vendorService.deleteVendor(id);
+  async deactivate_vendor(id: string): Promise<Vendor> {
+    return this.vendorService.deactivate_vendor(id);
   }
 
   async blockVendor(id: string): Promise<Vendor> {
