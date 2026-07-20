@@ -24,7 +24,6 @@ service ProcurementService {
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity InventoryItems as projection on db.InventoryItems {
     ID, materialId, description, quantityOnHand, reorderPoint, unit, warehouse
   };

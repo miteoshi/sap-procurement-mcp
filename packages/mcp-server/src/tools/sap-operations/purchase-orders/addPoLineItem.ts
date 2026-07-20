@@ -12,7 +12,10 @@ export const addPoLineItemInputSchema = z.object({
 
 export const addPoLineItemTool = {
   name: 'add_po_line_item',
-  description: "Adds a new line item (material, quantity, price) to an existing Purchase Order.",
+  description: 
+    "Adds a new line item (material, quantity, price) to an existing Purchase Order. " +
+    "NOTE: Use create_purchase_order with an 'items' array as the primary method to build a PO. " +
+    "This tool is only for later modifications/editing of an existing PO.",
   inputSchema: addPoLineItemInputSchema,
   handler: async (service: ProcurementService, input: z.infer<typeof addPoLineItemInputSchema>) => {
     const log = withCorrelation(randomUUID());

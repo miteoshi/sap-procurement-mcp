@@ -16,7 +16,7 @@ import { searchPurchaseOrdersTool } from './tools/sap-operations/purchase-orders
 import { getPurchaseOrderTool } from './tools/sap-operations/purchase-orders/getPurchaseOrder.js';
 import { createPurchaseOrderTool } from './tools/sap-operations/purchase-orders/createPurchaseOrder.js';
 import { addPoLineItemTool } from './tools/sap-operations/purchase-orders/addPoLineItem.js';
-import { approvePurchaseOrderTool } from './tools/sap-operations/purchase-orders/approvePurchaseOrder.js';
+import { releasePurchaseOrderTool } from './tools/sap-operations/purchase-orders/releasePurchaseOrder.js';
 import { cancelPurchaseOrderTool } from './tools/sap-operations/purchase-orders/cancelPurchaseOrder.js';
 import { receiveGoodsTool } from './tools/sap-operations/purchase-orders/receiveGoods.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
@@ -41,7 +41,7 @@ const tools = [
   getPurchaseOrderTool,
   createPurchaseOrderTool,
   addPoLineItemTool,
-  approvePurchaseOrderTool,
+  releasePurchaseOrderTool,
   cancelPurchaseOrderTool,
   receiveGoodsTool,
   checkInventoryTool,

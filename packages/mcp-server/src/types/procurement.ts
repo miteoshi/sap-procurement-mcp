@@ -15,9 +15,9 @@ export interface Vendor {
 
 
 export enum PurchaseOrderStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  SHIPPED = 'SHIPPED',
+  CREATED = 'CREATED',
+  RELEASED = 'RELEASED',
+  PARTIALLY_RECEIVED = 'PARTIALLY_RECEIVED',
   RECEIVED = 'RECEIVED',
   CANCELLED = 'CANCELLED'
 }

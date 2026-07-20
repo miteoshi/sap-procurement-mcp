@@ -16,11 +16,11 @@ export class ProcurementService {
   private readonly inventoryService: InventoryService;
   private readonly aiVendorService: AiVendorService;
 
-  constructor(client: CapClient = new CapClient()) {
-    this.vendorService = new VendorService(client);
-    this.purchaseOrderService = new PurchaseOrderService(client);
-    this.inventoryService = new InventoryService(client);
-    this.aiVendorService = new AiVendorService(client);
+  constructor(private readonly client: CapClient = new CapClient()) {
+    this.vendorService = new VendorService(this.client);
+    this.inventoryService = new InventoryService(this.client);
+    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService);
+    this.aiVendorService = new AiVendorService(this.client);
   }
 
   // --- Vendor Methods ---
@@ -70,7 +70,7 @@ export class ProcurementService {
     return this.purchaseOrderService.getPurchaseOrder(idOrPoNumber);
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ material_ID: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
     return this.purchaseOrderService.createPurchaseOrder(data);
   }
 
@@ -78,8 +78,8 @@ export class ProcurementService {
     return this.purchaseOrderService.addPOLineItem(poId, materialId, quantity, unitPrice);
   }
 
-  async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {
-    return this.purchaseOrderService.approvePurchaseOrder(id);
+  async releasePurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.releasePurchaseOrder(id);
   }
 
   async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {

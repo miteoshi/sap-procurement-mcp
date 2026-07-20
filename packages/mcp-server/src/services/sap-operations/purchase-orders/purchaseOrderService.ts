@@ -2,8 +2,15 @@ import type { CapClient } from '../../../clients/capClient.js';
 import type { ODataResponse, PurchaseOrder, PurchaseOrderFilters, POLineItem } from '../../../types/procurement.js';
 import { escapeOData } from '../../../utils/odataUtils.js';
 
+import { VendorService } from '../vendors/vendorService.js';
+import { InventoryService } from '../inventory/inventoryService.js';
+
 export class PurchaseOrderService {
-  constructor(private readonly client: CapClient) {}
+  constructor(
+    private readonly client: CapClient,
+    private readonly vendorService: VendorService,
+    private readonly inventoryService: InventoryService
+  ) {}
 
   async searchPurchaseOrders(filters: PurchaseOrderFilters = {}): Promise<PurchaseOrder[]> {
     const filterClauses: string[] = [];
@@ -55,19 +62,61 @@ export class PurchaseOrderService {
     return result.value[0];
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ material_ID: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+    // 1. Vendor Validation
+    const vendor = await this.vendorService.getVendor(data.vendor_ID);
+    if (!vendor) {
+      throw new Error(`Vendor with ID '${data.vendor_ID}' not found.`);
+    }
+    if (vendor.status === 'BLOCKED') {
+      throw new Error(`Vendor '${vendor.name}' is BLOCKED and cannot receive new purchase orders.`);
+    }
+    if (vendor.status === 'INACTIVE') {
+      throw new Error(`Vendor '${vendor.name}' is INACTIVE and cannot receive new purchase orders.`);
+    }
+
+    // 2. Line Item Validation (Local)
+    if (!data.items || data.items.length === 0) {
+      throw new Error(`A purchase order must contain at least one line item.`);
+    }
+    const seenMaterials = new Set<string>();
+    for (const item of data.items) {
+      if (item.quantity <= 0) {
+        throw new Error(`Quantity must be greater than 0 for material '${item.materialId}'.`);
+      }
+      if (item.unitPrice <= 0) {
+        throw new Error(`Unit price must be greater than 0 for material '${item.materialId}'.`);
+      }
+      if (seenMaterials.has(item.materialId)) {
+        throw new Error(`Duplicate material '${item.materialId}' in purchase order.`);
+      }
+      seenMaterials.add(item.materialId);
+    }
+
+    // 3. Material Lookup
+    const resolvedItems = [];
+    for (const item of data.items) {
+      const inventoryItem = await this.inventoryService.checkInventory(item.materialId);
+      if (!inventoryItem) {
+        throw new Error(`Material '${item.materialId}' not found in inventory.`);
+      }
+      resolvedItems.push({
+        material_ID: inventoryItem.ID,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice
+      });
+    }
+
     const payload: any = {
       vendor_ID: data.vendor_ID,
       currency: data.currency,
       poNumber: `PO-${Date.now()}`,
       orderDate: new Date().toISOString().split('T')[0],
-      status: 'PENDING',
-      totalAmount: 0
+      status: 'CREATED',
+      totalAmount: resolvedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
+      lineItems: resolvedItems
     };
-    if (data.items && data.items.length > 0) {
-      payload.lineItems = data.items;
-      payload.totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    }
+
     return this.client.post<PurchaseOrder>('/PurchaseOrders', payload);
   }
 
@@ -80,9 +129,9 @@ export class PurchaseOrderService {
     });
   }
 
-  async approvePurchaseOrder(id: string): Promise<PurchaseOrder> {
+  async releasePurchaseOrder(id: string): Promise<PurchaseOrder> {
     return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
-      status: 'APPROVED'
+      status: 'RELEASED'
     });
   }
 
@@ -93,6 +142,23 @@ export class PurchaseOrderService {
   }
 
   async receiveGoods(id: string): Promise<PurchaseOrder> {
+    const po = await this.getPurchaseOrder(id);
+    if (!po) {
+      throw new Error(`Purchase order not found.`);
+    }
+    if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
+      throw new Error(`Cannot receive goods for purchase order in status ${po.status}.`);
+    }
+
+    // TODO: Reserved for future enhancement: Partial Receiving
+    // e.g. receiveGoods(poId, receivedItems) -> sets status to PARTIALLY_RECEIVED
+
+    if (po.lineItems && po.lineItems.length > 0) {
+      for (const item of po.lineItems) {
+        await this.inventoryService.addStock(item.material_ID, item.quantity);
+      }
+    }
+
     return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
       status: 'RECEIVED'
     });
