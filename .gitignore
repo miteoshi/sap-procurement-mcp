@@ -85,3 +85,9 @@ claude_desktop_config.json
 # =========================
 *.pid
 *.seed
+
+
+# SQLite
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
