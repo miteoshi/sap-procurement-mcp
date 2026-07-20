@@ -41,3 +41,23 @@ entity InventoryItems : cuid, managed {
   unit          : String(10) default 'EA';
   warehouse     : String(50);
 }
+
+entity PurchasingInfoRecords : cuid, managed {
+  vendor        : Association to Vendors @mandatory;
+  material      : Association to InventoryItems @mandatory;
+  price         : Decimal(15,2) @mandatory;
+  currency      : String(3) default 'USD';
+  validFrom     : Date @mandatory;
+  validTo       : Date @mandatory;
+}
+
+entity Quotations : cuid, managed {
+  quotationId   : String(30) @mandatory;
+  vendor        : Association to Vendors @mandatory;
+  material      : Association to InventoryItems @mandatory;
+  quantity      : Integer @mandatory;
+  price         : Decimal(15,2) @mandatory;
+  currency      : String(3) default 'USD';
+  validUntil    : Date @mandatory;
+  status        : String(20) default 'OPEN'; // OPEN | ACCEPTED | REJECTED
+}

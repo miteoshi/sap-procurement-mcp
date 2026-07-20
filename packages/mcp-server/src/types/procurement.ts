@@ -44,11 +44,33 @@ export interface PurchaseOrder {
 export interface InventoryItem {
   ID: string;
   materialId: string;
-  description: string;
-  quantityOnHand: number;
-  reorderPoint: number;
-  unit: string;
-  warehouse: string;
+  description?: string;
+  quantityOnHand?: number;
+  reorderPoint?: number;
+  unit?: string;
+  warehouse?: string;
+}
+
+export interface PurchasingInfoRecord {
+  ID: string;
+  vendor_ID: string;
+  material_ID: string;
+  price: number;
+  currency: string;
+  validFrom: string;
+  validTo: string;
+}
+
+export interface Quotation {
+  ID: string;
+  quotationId: string;
+  vendor_ID: string;
+  material_ID: string;
+  quantity: number;
+  price: number;
+  currency: string;
+  validUntil: string;
+  status: 'OPEN' | 'ACCEPTED' | 'REJECTED';
 }
 
 export interface ODataResponse<T> {

@@ -4,12 +4,14 @@ import { escapeOData } from '../../../utils/odataUtils.js';
 
 import { VendorService } from '../vendors/vendorService.js';
 import { InventoryService } from '../inventory/inventoryService.js';
+import { PricingService } from '../pricing/pricingService.js';
 
 export class PurchaseOrderService {
   constructor(
     private readonly client: CapClient,
     private readonly vendorService: VendorService,
-    private readonly inventoryService: InventoryService
+    private readonly inventoryService: InventoryService,
+    private readonly pricingService: PricingService
   ) {}
 
   async searchPurchaseOrders(filters: PurchaseOrderFilters = {}): Promise<PurchaseOrder[]> {
@@ -62,7 +64,7 @@ export class PurchaseOrderService {
     return result.value[0];
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice?: number }> }): Promise<PurchaseOrder> {
     // 1. Vendor Validation
     const vendor = await this.vendorService.getVendor(data.vendor_ID);
     if (!vendor) {
@@ -84,7 +86,7 @@ export class PurchaseOrderService {
       if (item.quantity <= 0) {
         throw new Error(`Quantity must be greater than 0 for material '${item.materialId}'.`);
       }
-      if (item.unitPrice <= 0) {
+      if (item.unitPrice !== undefined && item.unitPrice <= 0) {
         throw new Error(`Unit price must be greater than 0 for material '${item.materialId}'.`);
       }
       if (seenMaterials.has(item.materialId)) {
@@ -100,10 +102,19 @@ export class PurchaseOrderService {
       if (!inventoryItem) {
         throw new Error(`Material '${item.materialId}' not found in inventory.`);
       }
+
+      let finalPrice = item.unitPrice;
+      if (finalPrice === undefined) {
+        finalPrice = await this.pricingService.resolveBestPrice(data.vendor_ID, inventoryItem.ID);
+        if (finalPrice === undefined) {
+          throw new Error(`No pricing info record or historical price found for material '${item.materialId}'. Please specify a unitPrice explicitly.`);
+        }
+      }
+
       resolvedItems.push({
         material_ID: inventoryItem.ID,
         quantity: item.quantity,
-        unitPrice: item.unitPrice
+        unitPrice: finalPrice
       });
     }
 

@@ -9,7 +9,7 @@ export const createPurchaseOrderInputSchema = z.object({
   items: z.array(z.object({
     materialId: z.string().describe("The material ID, e.g. 'MAT-1001'"),
     quantity: z.number().int().positive().describe("Quantity of the material"),
-    unitPrice: z.number().positive().describe("Price per unit")
+    unitPrice: z.number().positive().optional().describe("The unit price for this material. If omitted, the system will attempt to automatically resolve it from active contracts or historical purchase orders."),
   })).optional().describe("Array of line items to create with the PO"),
 });
 

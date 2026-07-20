@@ -21,6 +21,10 @@ import { cancelPurchaseOrderTool } from './tools/sap-operations/purchase-orders/
 import { receiveGoodsTool } from './tools/sap-operations/purchase-orders/receiveGoods.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
 
+import { getLastPurchasePriceTool } from './tools/sap-operations/pricing/getLastPurchasePrice.js';
+import { getVendorMaterialPriceTool } from './tools/sap-operations/pricing/getVendorMaterialPrice.js';
+import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/pricing/createPurchaseOrderFromQuote.js';
+
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
 import { supplierSpendSummaryTool } from './tools/ai-operations/vendors/supplierSpendSummary.js';
@@ -50,6 +54,11 @@ const tools = [
   vendorSummaryTool,
   supplierPerformanceTool,
   supplierSpendSummaryTool,
+
+  // Pricing Intelligence
+  getLastPurchasePriceTool,
+  getVendorMaterialPriceTool,
+  createPurchaseOrderFromQuoteTool
 ];
 
 const server = new Server(

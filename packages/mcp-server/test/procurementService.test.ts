@@ -160,6 +160,42 @@ describe('ProcurementService', () => {
     );
   });
 
+  it('createPurchaseOrder auto-resolves missing prices via pricingService', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'ACTIVE', name: 'Test Vendor' }] });
+    const service = new ProcurementService(client);
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid' });
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/Vendors') {
+        return Promise.resolve({ value: [{ ID: 'v1', status: 'ACTIVE' }] });
+      }
+      if (path === '/InventoryItems') {
+        return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1' }] });
+      }
+      if (path === '/PurchasingInfoRecords') {
+        return Promise.resolve({ value: [{ price: 150 }] });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    await service.createPurchaseOrder({
+      vendor_ID: 'v1',
+      currency: 'USD',
+      items: [
+        { materialId: 'M1', quantity: 2 } // unitPrice omitted
+      ]
+    });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({
+        totalAmount: 300,
+        lineItems: [
+          { material_ID: 'mat-1', quantity: 2, unitPrice: 150 }
+        ]
+      }),
+    );
+  });
+
   it('addPOLineItem sends POST request to /POLineItems', async () => {
     const client = mockClient({ ID: 'li-uuid' });
     const service = new ProcurementService(client);

@@ -4,6 +4,7 @@ import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
 import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
+import { PricingService } from './sap-operations/pricing/pricingService.js';
 
 /**
  * Facade service that delegates to domain-specific services.
@@ -14,12 +15,14 @@ export class ProcurementService {
   private readonly vendorService: VendorService;
   private readonly purchaseOrderService: PurchaseOrderService;
   private readonly inventoryService: InventoryService;
+  private readonly pricingService: PricingService;
   private readonly aiVendorService: AiVendorService;
 
   constructor(private readonly client: CapClient = new CapClient()) {
     this.vendorService = new VendorService(this.client);
     this.inventoryService = new InventoryService(this.client);
-    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService);
+    this.pricingService = new PricingService(this.client);
+    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService);
     this.aiVendorService = new AiVendorService(this.client);
   }
 
@@ -70,7 +73,7 @@ export class ProcurementService {
     return this.purchaseOrderService.getPurchaseOrder(idOrPoNumber);
   }
 
-  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice: number }> }): Promise<PurchaseOrder> {
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice?: number }> }): Promise<PurchaseOrder> {
     return this.purchaseOrderService.createPurchaseOrder(data);
   }
 
@@ -93,5 +96,10 @@ export class ProcurementService {
   // --- Inventory Methods ---
   async checkInventory(materialId: string): Promise<InventoryItem | undefined> {
     return this.inventoryService.checkInventory(materialId);
+  }
+
+  // --- Pricing Methods ---
+  getPricingService(): PricingService {
+    return this.pricingService;
   }
 }
