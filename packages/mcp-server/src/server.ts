@@ -20,6 +20,9 @@ import { releasePurchaseOrderTool } from './tools/sap-operations/purchase-orders
 import { cancelPurchaseOrderTool } from './tools/sap-operations/purchase-orders/cancelPurchaseOrder.js';
 import { receiveGoodsTool } from './tools/sap-operations/purchase-orders/receiveGoods.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
+import { listInventoryTool } from './tools/sap-operations/inventory/listInventory.js';
+import { checkLowStockTool } from './tools/sap-operations/inventory/checkLowStock.js';
+import { issueGoodsTool } from './tools/sap-operations/inventory/issueGoods.js';
 
 import { getLastPurchasePriceTool } from './tools/sap-operations/pricing/getLastPurchasePrice.js';
 import { getVendorMaterialPriceTool } from './tools/sap-operations/pricing/getVendorMaterialPrice.js';
@@ -48,7 +51,12 @@ const tools = [
   releasePurchaseOrderTool,
   cancelPurchaseOrderTool,
   receiveGoodsTool,
+  
+  // Inventory
   checkInventoryTool,
+  listInventoryTool,
+  checkLowStockTool,
+  issueGoodsTool,
 
   // AI Operations
   vendorSummaryTool,

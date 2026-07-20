@@ -98,6 +98,18 @@ export class ProcurementService {
     return this.inventoryService.checkInventory(materialId);
   }
 
+  async listInventory(limit?: number): Promise<InventoryItem[]> {
+    return this.inventoryService.listInventory(limit);
+  }
+
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return this.inventoryService.getLowStockItems();
+  }
+
+  async issueGoods(materialId: string, quantity: number): Promise<InventoryItem> {
+    return this.inventoryService.issueGoods(materialId, quantity);
+  }
+
   // --- Pricing Methods ---
   getPricingService(): PricingService {
     return this.pricingService;

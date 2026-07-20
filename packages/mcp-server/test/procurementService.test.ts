@@ -315,4 +315,41 @@ describe('ProcurementService', () => {
 
     expect(result).toBeUndefined();
   });
+
+  it('listInventory returns paginated items', async () => {
+    const client = mockClient({ value: [{ materialId: 'M1' }, { materialId: 'M2' }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.listInventory(10);
+    expect(client.get).toHaveBeenCalledWith(
+      '/InventoryItems',
+      expect.objectContaining({ $top: '10' })
+    );
+    expect(result).toHaveLength(2);
+  });
+
+  it('getLowStockItems filters correctly', async () => {
+    const client = mockClient({ value: [{ materialId: 'M1', quantityOnHand: 2, reorderPoint: 10 }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.getLowStockItems();
+    expect(client.get).toHaveBeenCalledWith(
+      '/InventoryItems',
+      expect.objectContaining({ $filter: 'quantityOnHand le reorderPoint' })
+    );
+    expect(result[0].materialId).toBe('M1');
+  });
+
+  it('issueGoods deducts stock correctly', async () => {
+    const client = mockClient({ value: [{ ID: 'item-uuid', materialId: 'M1', quantityOnHand: 50 }] });
+    const service = new ProcurementService(client);
+    (client.patch as any).mockResolvedValue({ ID: 'item-uuid', quantityOnHand: 40 });
+
+    const result = await service.issueGoods('M1', 10);
+    expect(client.patch).toHaveBeenCalledWith(
+      "/InventoryItems(item-uuid)",
+      expect.objectContaining({ quantityOnHand: 40 })
+    );
+    expect(result.quantityOnHand).toBe(40);
+  });
 });
