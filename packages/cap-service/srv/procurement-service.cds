@@ -14,13 +14,11 @@ service ProcurementService {
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity PurchaseOrders as projection on db.PurchaseOrders {
     ID, poNumber, vendor, orderDate, status, currency, totalAmount, lineItems
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity POLineItems as projection on db.POLineItems {
     ID, purchaseOrder, material, quantity, unitPrice
   };

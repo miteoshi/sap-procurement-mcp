@@ -1,5 +1,5 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters } from '../types/procurement.js';
 import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
@@ -61,8 +61,9 @@ export class ProcurementService {
   }
 
   // --- Purchase Order Methods ---
-  async listRecentOrders(vendorId: string, limit = 10): Promise<PurchaseOrder[]> {
-    return this.purchaseOrderService.listRecentOrders(vendorId, limit);
+
+  async searchPurchaseOrders(filters: PurchaseOrderFilters): Promise<PurchaseOrder[]> {
+    return this.purchaseOrderService.searchPurchaseOrders(filters);
   }
 
   async getPoStatus(poNumber: string): Promise<PurchaseOrder | undefined> {

@@ -79,15 +79,15 @@ describe('ProcurementService', () => {
     expect(result.status).toBe('BLOCKED');
   });
 
-  it('listRecentOrders orders by date descending', async () => {
+  it('searchPurchaseOrders dynamically applies filters', async () => {
     const client = mockClient({ value: [] });
     const service = new ProcurementService(client);
 
-    await service.listRecentOrders('vendor-123', 5);
+    await service.searchPurchaseOrders({ vendorId: 'vendor-123', limit: 5 });
 
     expect(client.get).toHaveBeenCalledWith(
       '/PurchaseOrders',
-      expect.objectContaining({ $orderby: 'orderDate desc', $top: '5' }),
+      expect.objectContaining({ $filter: "vendor_ID eq 'vendor-123'", $orderby: 'orderDate desc', $top: '5' }),
     );
   });
 

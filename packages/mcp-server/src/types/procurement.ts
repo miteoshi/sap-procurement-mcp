@@ -14,12 +14,20 @@ export interface Vendor {
 }
 
 
+export enum PurchaseOrderStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  SHIPPED = 'SHIPPED',
+  RECEIVED = 'RECEIVED',
+  CANCELLED = 'CANCELLED'
+}
+
 export interface PurchaseOrder {
   ID: string;
   poNumber: string;
   vendor_ID: string;
   orderDate: string;
-  status: 'PENDING' | 'APPROVED' | 'SHIPPED' | 'RECEIVED' | 'CANCELLED';
+  status: PurchaseOrderStatus;
   currency: string;
   totalAmount: number;
 }
@@ -44,6 +52,14 @@ export interface ODataResponse<T> {
 export interface VendorFilters {
   name?: string;
   country?: string;
-  status?: string;
+  status?: VendorStatus;
+  limit?: number;
+}
+
+export interface PurchaseOrderFilters {
+  vendorId?: string;
+  status?: PurchaseOrderStatus;
+  fromDate?: string;
+  toDate?: string;
   limit?: number;
 }

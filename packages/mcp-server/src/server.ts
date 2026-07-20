@@ -12,7 +12,7 @@ import { updateVendorTool } from './tools/sap-operations/vendors/updateVendor.js
 import { blockVendorTool } from './tools/sap-operations/vendors/blockVendor.js';
 import { unblockVendorTool } from './tools/sap-operations/vendors/unblockVendor.js';
 import { deactivateVendorTool } from './tools/sap-operations/vendors/deactivateVendor.js';
-import { listRecentOrdersTool } from './tools/sap-operations/purchase-orders/listRecentOrders.js';
+import { searchPurchaseOrdersTool } from './tools/sap-operations/purchase-orders/searchPurchaseOrders.js';
 import { getPoStatusTool } from './tools/sap-operations/purchase-orders/getPoStatus.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
 
@@ -32,7 +32,7 @@ const tools = [
   blockVendorTool,
   unblockVendorTool,
   deactivateVendorTool,
-  listRecentOrdersTool,
+  searchPurchaseOrdersTool,
   getPoStatusTool,
   checkInventoryTool,
 
