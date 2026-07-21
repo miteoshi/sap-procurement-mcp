@@ -196,6 +196,44 @@ describe('ProcurementService', () => {
     );
   });
 
+  it('createPurchaseOrderFromQuotation creates PO and accepts quote', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid' }] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path.includes('/Quotations')) {
+        return Promise.resolve({ value: [{ ID: 'q-1', vendor_ID: 'v1', material_ID: 'mat-1', quantity: 10, price: 50, status: 'OPEN', validUntil: '2099-12-31' }] });
+      }
+      if (path.includes('/InventoryItems')) {
+        return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1' }] });
+      }
+      if (path.includes('/Vendors')) {
+        return Promise.resolve({ value: [{ ID: 'v1', status: 'ACTIVE' }] });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid' });
+    (client.patch as any).mockResolvedValue({ ID: 'q-1', status: 'ACCEPTED' });
+
+    await service.createPurchaseOrderFromQuotation('q-1');
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({
+        vendor_ID: 'v1',
+        totalAmount: 500,
+        lineItems: [
+          { material_ID: 'mat-1', quantity: 10, unitPrice: 50 }
+        ]
+      })
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/Quotations(q-1)",
+      expect.objectContaining({ status: 'ACCEPTED' })
+    );
+  });
+
   it('addPOLineItem sends POST request to /POLineItems', async () => {
     const client = mockClient({ ID: 'li-uuid' });
     const service = new ProcurementService(client);

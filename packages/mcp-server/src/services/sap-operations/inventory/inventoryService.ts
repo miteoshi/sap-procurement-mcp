@@ -14,6 +14,17 @@ export class InventoryService {
   }
 
   /**
+   * Looks up an inventory item by its UUID.
+   */
+  async getMaterialById(uuid: string): Promise<InventoryItem | undefined> {
+    const result = await this.client.get<ODataResponse<InventoryItem>>('/InventoryItems', {
+      $filter: `ID eq '${escapeOData(uuid)}'`,
+      $top: '1',
+    });
+    return result.value ? result.value[0] : undefined;
+  }
+
+  /**
    * Retrieves a list of all inventory items (paginated).
    */
   async listInventory(limit: number = 50): Promise<InventoryItem[]> {

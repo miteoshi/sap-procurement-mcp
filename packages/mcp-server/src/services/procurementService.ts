@@ -77,6 +77,10 @@ export class ProcurementService {
     return this.purchaseOrderService.createPurchaseOrder(data);
   }
 
+  async createPurchaseOrderFromQuotation(quotationId: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.createPurchaseOrderFromQuotation(quotationId);
+  }
+
   async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
     return this.purchaseOrderService.addPOLineItem(poId, materialId, quantity, unitPrice);
   }

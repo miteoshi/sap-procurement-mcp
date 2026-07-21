@@ -14,7 +14,7 @@ export const searchPurchaseOrdersInputSchema = z.object({
 
 export const searchPurchaseOrdersTool = {
   name: 'search_purchase_orders',
-  description: "Searches for purchase orders with flexible filters (vendor, status, dates).",
+  description: "Search purchase orders using vendor, status, or date filters. Returns purchase order headers together with expanded vendor information and line items (including material details) when available. Use this tool to list purchase orders; use get_purchase_order only when detailed information for a single purchase order is required.",
   inputSchema: searchPurchaseOrdersInputSchema,
   handler: async (service: ProcurementService, input: z.infer<typeof searchPurchaseOrdersInputSchema>) => {
     const log = withCorrelation(randomUUID());

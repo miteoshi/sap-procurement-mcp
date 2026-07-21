@@ -132,6 +132,43 @@ export class PurchaseOrderService {
     return this.client.post<PurchaseOrder>('/PurchaseOrders', payload);
   }
 
+  async createPurchaseOrderFromQuotation(quotationId: string): Promise<PurchaseOrder> {
+    const quotation = await this.pricingService.getQuotation(quotationId);
+    if (!quotation) {
+      throw new Error(`Quotation '${quotationId}' not found.`);
+    }
+
+    if (quotation.status !== 'OPEN') {
+      throw new Error(`Quotation '${quotationId}' cannot be used because its status is ${quotation.status}.`);
+    }
+
+    const today = new Date().toISOString().substring(0, 10);
+    if (quotation.validUntil < today) {
+      throw new Error(`Quotation '${quotationId}' expired on ${quotation.validUntil}.`);
+    }
+
+    const material = await this.inventoryService.getMaterialById(quotation.material_ID);
+    if (!material) {
+      throw new Error(`Material for quotation not found in inventory.`);
+    }
+
+    const po = await this.createPurchaseOrder({
+      vendor_ID: quotation.vendor_ID,
+      currency: quotation.currency,
+      items: [
+        {
+          materialId: material.materialId,
+          quantity: quotation.quantity,
+          unitPrice: quotation.price
+        }
+      ]
+    });
+
+    await this.pricingService.acceptQuotation(quotation.ID);
+
+    return po;
+  }
+
   async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
     return this.client.post<POLineItem>('/POLineItems', {
       purchaseOrder_ID: poId,

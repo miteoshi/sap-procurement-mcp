@@ -53,6 +53,24 @@ export class PricingService {
   }
 
   /**
+   * Accepts a quotation.
+   */
+  async acceptQuotation(id: string): Promise<Quotation> {
+    return this.client.patch<Quotation>(`/Quotations(${escapeOData(id)})`, {
+      status: 'ACCEPTED'
+    });
+  }
+
+  /**
+   * Rejects a quotation.
+   */
+  async rejectQuotation(id: string): Promise<Quotation> {
+    return this.client.patch<Quotation>(`/Quotations(${escapeOData(id)})`, {
+      status: 'REJECTED'
+    });
+  }
+
+  /**
    * Auto-resolves the best price by checking active info records first, then falling back to historical POs.
    */
   async resolveBestPrice(vendorId: string, materialId: string): Promise<number | undefined> {
