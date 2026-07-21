@@ -3,7 +3,7 @@ import type { InventoryItem, ODataResponse } from '../../../types/procurement.js
 import { escapeOData } from '../../../utils/odataUtils.js';
 
 export class InventoryService {
-  constructor(private readonly client: CapClient) {}
+  constructor(private readonly client: CapClient) { }
 
   async checkInventory(materialId: string): Promise<InventoryItem | undefined> {
     const result = await this.client.get<ODataResponse<InventoryItem>>('/InventoryItems', {
@@ -60,7 +60,7 @@ export class InventoryService {
     // First fetch to get current stock
     const item = await this.client.get<InventoryItem>(`/InventoryItems(${escapeOData(id)})`);
     const newQuantity = (item.quantityOnHand || 0) + quantityToAdd;
-    
+
     return this.client.patch<InventoryItem>(`/InventoryItems(${escapeOData(id)})`, {
       quantityOnHand: newQuantity
     });

@@ -12,7 +12,7 @@ export class PurchaseOrderService {
     private readonly vendorService: VendorService,
     private readonly inventoryService: InventoryService,
     private readonly pricingService: PricingService
-  ) {}
+  ) { }
 
   async searchPurchaseOrders(filters: PurchaseOrderFilters = {}): Promise<PurchaseOrder[]> {
     const filterClauses: string[] = [];
@@ -30,6 +30,7 @@ export class PurchaseOrderService {
       filterClauses.push(`orderDate le ${escapeOData(filters.toDate)}`);
     }
 
+    //expand on lineItems, and show POLineItems fields, compositioned on it
     const queryParams: Record<string, string> = {
       $orderby: 'orderDate desc',
       $top: String(filters.limit || 50),
@@ -55,7 +56,7 @@ export class PurchaseOrderService {
   async getPurchaseOrder(idOrPoNumber: string): Promise<PurchaseOrder | undefined> {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrPoNumber);
     const filterField = isUuid ? 'ID' : 'poNumber';
-    
+
     const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
       $filter: `${filterField} eq '${escapeOData(idOrPoNumber)}'`,
       $top: '1',
@@ -152,6 +153,17 @@ export class PurchaseOrderService {
     });
   }
 
+  //GR
+  //Receive Goods
+  //Find Purchase Order
+  //Validate
+  //Determine quantities
+  //Increase Inventory
+  //Update PO Line Items
+  //Update PO Status
+  //Done
+
+
   async receiveGoods(idOrPoNumber: string, partialItems?: Array<{ materialId: string, quantity: number }>): Promise<PurchaseOrder> {
     const po = await this.getPurchaseOrder(idOrPoNumber);
     if (!po) {
@@ -183,7 +195,7 @@ export class PurchaseOrderService {
 
     for (const item of po.lineItems) {
       let qtyToReceive = 0;
-      
+
       const currentReceived = item.receivedQuantity ?? 0;
       const remaining = item.quantity - currentReceived;
 
@@ -195,7 +207,7 @@ export class PurchaseOrderService {
         }
         qtyToReceive = requestedQty;
       } else {
-        // Receive everything remaining
+        // Receive everything remaining, since no partialItems are provided
         qtyToReceive = remaining;
       }
 
@@ -208,6 +220,8 @@ export class PurchaseOrderService {
           receivedQuantity: currentReceived + qtyToReceive
         });
       }
+
+      //Check if all line items are received
 
       const newReceived = currentReceived + qtyToReceive;
       if (newReceived < item.quantity) {
