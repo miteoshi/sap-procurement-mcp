@@ -12,9 +12,21 @@ import { updateVendorTool } from './tools/sap-operations/vendors/updateVendor.js
 import { blockVendorTool } from './tools/sap-operations/vendors/blockVendor.js';
 import { unblockVendorTool } from './tools/sap-operations/vendors/unblockVendor.js';
 import { deactivateVendorTool } from './tools/sap-operations/vendors/deactivateVendor.js';
-import { listRecentOrdersTool } from './tools/sap-operations/purchase-orders/listRecentOrders.js';
-import { getPoStatusTool } from './tools/sap-operations/purchase-orders/getPoStatus.js';
+import { searchPurchaseOrdersTool } from './tools/sap-operations/purchase-orders/searchPurchaseOrders.js';
+import { getPurchaseOrderTool } from './tools/sap-operations/purchase-orders/getPurchaseOrder.js';
+import { createPurchaseOrderTool } from './tools/sap-operations/purchase-orders/createPurchaseOrder.js';
+import { addPoLineItemTool } from './tools/sap-operations/purchase-orders/addPoLineItem.js';
+import { releasePurchaseOrderTool } from './tools/sap-operations/purchase-orders/releasePurchaseOrder.js';
+import { cancelPurchaseOrderTool } from './tools/sap-operations/purchase-orders/cancelPurchaseOrder.js';
+import { receiveGoodsTool } from './tools/sap-operations/purchase-orders/receiveGoods.js';
 import { checkInventoryTool } from './tools/sap-operations/inventory/checkInventory.js';
+import { listInventoryTool } from './tools/sap-operations/inventory/listInventory.js';
+import { checkLowStockTool } from './tools/sap-operations/inventory/checkLowStock.js';
+import { issueGoodsTool } from './tools/sap-operations/inventory/issueGoods.js';
+
+import { getLastPurchasePriceTool } from './tools/sap-operations/pricing/getLastPurchasePrice.js';
+import { getVendorMaterialPriceTool } from './tools/sap-operations/pricing/getVendorMaterialPrice.js';
+import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/pricing/createPurchaseOrderFromQuote.js';
 
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
@@ -32,14 +44,29 @@ const tools = [
   blockVendorTool,
   unblockVendorTool,
   deactivateVendorTool,
-  listRecentOrdersTool,
-  getPoStatusTool,
+  searchPurchaseOrdersTool,
+  getPurchaseOrderTool,
+  createPurchaseOrderTool,
+  addPoLineItemTool,
+  releasePurchaseOrderTool,
+  cancelPurchaseOrderTool,
+  receiveGoodsTool,
+  
+  // Inventory
   checkInventoryTool,
+  listInventoryTool,
+  checkLowStockTool,
+  issueGoodsTool,
 
   // AI Operations
   vendorSummaryTool,
   supplierPerformanceTool,
   supplierSpendSummaryTool,
+
+  // Pricing Intelligence
+  getLastPurchasePriceTool,
+  getVendorMaterialPriceTool,
+  createPurchaseOrderFromQuoteTool
 ];
 
 const server = new Server(

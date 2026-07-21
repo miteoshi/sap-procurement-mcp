@@ -79,16 +79,226 @@ describe('ProcurementService', () => {
     expect(result.status).toBe('BLOCKED');
   });
 
-  it('listRecentOrders orders by date descending', async () => {
+  it('searchPurchaseOrders dynamically applies filters', async () => {
     const client = mockClient({ value: [] });
     const service = new ProcurementService(client);
 
-    await service.listRecentOrders('vendor-123', 5);
+    await service.searchPurchaseOrders({ vendorId: 'vendor-123', limit: 5 });
 
     expect(client.get).toHaveBeenCalledWith(
       '/PurchaseOrders',
-      expect.objectContaining({ $orderby: 'orderDate desc', $top: '5' }),
+      expect.objectContaining({ $filter: "vendor_ID eq 'vendor-123'", $orderby: 'orderDate desc', $top: '5' }),
     );
+  });
+
+  it('getPurchaseOrder retrieves by poNumber', async () => {
+    const client = mockClient({ value: [{ poNumber: 'PO-123' }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.getPurchaseOrder('PO-123');
+
+    expect(client.get).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({ $filter: "poNumber eq 'PO-123'", $top: '1' }),
+    );
+    expect(result?.poNumber).toBe('PO-123');
+  });
+
+  it('createPurchaseOrder sends POST request', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', poNumber: 'PO-1000', status: 'ACTIVE', name: 'Test Vendor' }] });
+    const service = new ProcurementService(client);
+    // Note: mockClient.post will also return { value: ... } which is weird, but result.ID comes from it? 
+    // Wait, the client.post in mockClient is mockResolvedValue(returnValue).
+    // Let's redefine post for this test specifically.
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid', poNumber: 'PO-1000' });
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid', poNumber: 'PO-1000' });
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/Vendors') {
+        return Promise.resolve({ value: [{ ID: 'po-uuid', poNumber: 'PO-1000', status: 'ACTIVE', name: 'Test Vendor' }] });
+      }
+      return Promise.resolve({ value: [{ ID: 'mat-1' }] });
+    });
+
+    const result = await service.createPurchaseOrder({ 
+      vendor_ID: 'v1', 
+      currency: 'USD',
+      items: [{ materialId: 'M1', quantity: 1, unitPrice: 10 }]
+    });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({ vendor_ID: 'v1', currency: 'USD' }),
+    );
+    expect(result.ID).toBe('po-uuid');
+  });
+
+  it('createPurchaseOrder with items maps to lineItems and calculates total', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'ACTIVE', name: 'Test Vendor' }] });
+    const service = new ProcurementService(client);
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid' });
+
+    await service.createPurchaseOrder({
+      vendor_ID: 'v1',
+      currency: 'USD',
+      items: [
+        { materialId: 'M1', quantity: 2, unitPrice: 50 },
+        { materialId: 'M2', quantity: 1, unitPrice: 100 }
+      ]
+    });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({
+        vendor_ID: 'v1',
+        currency: 'USD',
+        totalAmount: 200,
+        lineItems: [
+          { material_ID: 'po-uuid', quantity: 2, unitPrice: 50 },
+          { material_ID: 'po-uuid', quantity: 1, unitPrice: 100 }
+        ]
+      }),
+    );
+  });
+
+  it('createPurchaseOrder auto-resolves missing prices via pricingService', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'ACTIVE', name: 'Test Vendor' }] });
+    const service = new ProcurementService(client);
+    (client.post as any).mockResolvedValue({ ID: 'po-uuid' });
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/Vendors') {
+        return Promise.resolve({ value: [{ ID: 'v1', status: 'ACTIVE' }] });
+      }
+      if (path === '/InventoryItems') {
+        return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1' }] });
+      }
+      if (path === '/PurchasingInfoRecords') {
+        return Promise.resolve({ value: [{ price: 150 }] });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    await service.createPurchaseOrder({
+      vendor_ID: 'v1',
+      currency: 'USD',
+      items: [
+        { materialId: 'M1', quantity: 2 } // unitPrice omitted
+      ]
+    });
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/PurchaseOrders',
+      expect.objectContaining({
+        totalAmount: 300,
+        lineItems: [
+          { material_ID: 'mat-1', quantity: 2, unitPrice: 150 }
+        ]
+      }),
+    );
+  });
+
+  it('addPOLineItem sends POST request to /POLineItems', async () => {
+    const client = mockClient({ ID: 'li-uuid' });
+    const service = new ProcurementService(client);
+
+    const result = await service.addPOLineItem('po-uuid', 'mat-1', 5, 20);
+
+    expect(client.post).toHaveBeenCalledWith(
+      '/POLineItems',
+      { purchaseOrder_ID: 'po-uuid', material_ID: 'mat-1', quantity: 5, unitPrice: 20 }
+    );
+    expect(result.ID).toBe('li-uuid');
+  });
+
+  it('releasePurchaseOrder updates status to RELEASED', async () => {
+    const client = mockClient({ ID: 'po-uuid', status: 'RELEASED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.releasePurchaseOrder('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'RELEASED' }),
+    );
+    expect(result.status).toBe('RELEASED');
+  });
+
+  it('cancelPurchaseOrder updates status to CANCELLED', async () => {
+    const client = mockClient({ ID: 'po-uuid', status: 'CANCELLED' });
+    const service = new ProcurementService(client);
+
+    const result = await service.cancelPurchaseOrder('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'CANCELLED' }),
+    );
+    expect(result.status).toBe('CANCELLED');
+  });
+
+  it('receiveGoods updates status to RECEIVED and adds stock', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 5, receivedQuantity: 0 }] }] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/PurchaseOrders') {
+        return Promise.resolve({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 5, receivedQuantity: 0 }] }] });
+      }
+      return Promise.resolve({ quantityOnHand: 10 });
+    });
+    
+    (client.patch as any).mockResolvedValue({ ID: 'po-uuid', status: 'RECEIVED' });
+
+    const result = await service.receiveGoods('po-uuid');
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/InventoryItems(mat-1)",
+      expect.objectContaining({ quantityOnHand: 15 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/POLineItems(li-1)",
+      expect.objectContaining({ receivedQuantity: 5 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'RECEIVED' }),
+    );
+    expect(result.status).toBe('RECEIVED');
+  });
+
+  it('receiveGoods with partial items sets status to PARTIALLY_RECEIVED', async () => {
+    const client = mockClient({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 10, receivedQuantity: 2 }] }] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/PurchaseOrders') {
+        return Promise.resolve({ value: [{ ID: 'po-uuid', status: 'RELEASED', lineItems: [{ ID: 'li-1', material_ID: 'mat-1', quantity: 10, receivedQuantity: 2 }] }] });
+      }
+      if (path.startsWith('/InventoryItems(')) {
+        return Promise.resolve({ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 });
+      }
+      if (path.includes('InventoryItems')) {
+        return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 }] });
+      }
+      return Promise.resolve({ value: [{ ID: 'mat-1', materialId: 'M1', quantityOnHand: 5 }] });
+    });
+    
+    (client.patch as any).mockResolvedValue({ ID: 'po-uuid', status: 'PARTIALLY_RECEIVED' });
+
+    const result = await service.receiveGoods('po-uuid', [{ materialId: 'M1', quantity: 3 }]);
+
+    expect(client.patch).toHaveBeenCalledWith(
+      "/InventoryItems(mat-1)",
+      expect.objectContaining({ quantityOnHand: 8 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/POLineItems(li-1)",
+      expect.objectContaining({ receivedQuantity: 5 }),
+    );
+    expect(client.patch).toHaveBeenCalledWith(
+      "/PurchaseOrders(po-uuid)",
+      expect.objectContaining({ status: 'PARTIALLY_RECEIVED' }),
+    );
+    expect(result.status).toBe('PARTIALLY_RECEIVED');
   });
 
   it('getSupplierSpend aggregates total amount correctly', async () => {
@@ -110,7 +320,7 @@ describe('ProcurementService', () => {
       value: [
         { status: 'RECEIVED' },
         { status: 'RECEIVED' },
-        { status: 'PENDING' },
+        { status: 'CREATED' },
         { status: 'CANCELLED' },
       ],
     });
@@ -126,7 +336,7 @@ describe('ProcurementService', () => {
     const client = mockClient({ value: [] });
     const service = new ProcurementService(client);
 
-    await service.getPoStatus("PO-O'Brien-01");
+    await service.getPurchaseOrder("PO-O'Brien-01");
 
     const callArgs = (client.get as any).mock.calls[0][1];
     expect(callArgs.$filter).toContain("PO-O''Brien-01");
@@ -139,5 +349,42 @@ describe('ProcurementService', () => {
     const result = await service.checkInventory('UNKNOWN');
 
     expect(result).toBeUndefined();
+  });
+
+  it('listInventory returns paginated items', async () => {
+    const client = mockClient({ value: [{ materialId: 'M1' }, { materialId: 'M2' }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.listInventory(10);
+    expect(client.get).toHaveBeenCalledWith(
+      '/InventoryItems',
+      expect.objectContaining({ $top: '10' })
+    );
+    expect(result).toHaveLength(2);
+  });
+
+  it('getLowStockItems filters correctly', async () => {
+    const client = mockClient({ value: [{ materialId: 'M1', quantityOnHand: 2, reorderPoint: 10 }] });
+    const service = new ProcurementService(client);
+
+    const result = await service.getLowStockItems();
+    expect(client.get).toHaveBeenCalledWith(
+      '/InventoryItems',
+      expect.objectContaining({ $filter: 'quantityOnHand le reorderPoint' })
+    );
+    expect(result[0].materialId).toBe('M1');
+  });
+
+  it('issueGoods deducts stock correctly', async () => {
+    const client = mockClient({ value: [{ ID: 'item-uuid', materialId: 'M1', quantityOnHand: 50 }] });
+    const service = new ProcurementService(client);
+    (client.patch as any).mockResolvedValue({ ID: 'item-uuid', quantityOnHand: 40 });
+
+    const result = await service.issueGoods('M1', 10);
+    expect(client.patch).toHaveBeenCalledWith(
+      "/InventoryItems(item-uuid)",
+      expect.objectContaining({ quantityOnHand: 40 })
+    );
+    expect(result.quantityOnHand).toBe(40);
   });
 });

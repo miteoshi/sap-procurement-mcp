@@ -31,8 +31,8 @@ export const checkInventoryTool = {
       found: true,
       material_id: item.materialId,
       description: item.description,
-      quantity_on_hand: item.quantityOnHand,
-      low_stock: item.quantityOnHand <= item.reorderPoint,
+      quantityOnHand: item.quantityOnHand ?? 0,
+      low_stock: (item.quantityOnHand ?? 0) <= (item.reorderPoint ?? 10),
       warehouse: item.warehouse,
     };
   },

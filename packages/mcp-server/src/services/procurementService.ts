@@ -1,9 +1,10 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem } from '../types/procurement.js';
 import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
 import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
+import { PricingService } from './sap-operations/pricing/pricingService.js';
 
 /**
  * Facade service that delegates to domain-specific services.
@@ -14,13 +15,15 @@ export class ProcurementService {
   private readonly vendorService: VendorService;
   private readonly purchaseOrderService: PurchaseOrderService;
   private readonly inventoryService: InventoryService;
+  private readonly pricingService: PricingService;
   private readonly aiVendorService: AiVendorService;
 
-  constructor(client: CapClient = new CapClient()) {
-    this.vendorService = new VendorService(client);
-    this.purchaseOrderService = new PurchaseOrderService(client);
-    this.inventoryService = new InventoryService(client);
-    this.aiVendorService = new AiVendorService(client);
+  constructor(private readonly client: CapClient = new CapClient()) {
+    this.vendorService = new VendorService(this.client);
+    this.inventoryService = new InventoryService(this.client);
+    this.pricingService = new PricingService(this.client);
+    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService);
+    this.aiVendorService = new AiVendorService(this.client);
   }
 
   // --- Vendor Methods ---
@@ -61,16 +64,54 @@ export class ProcurementService {
   }
 
   // --- Purchase Order Methods ---
-  async listRecentOrders(vendorId: string, limit = 10): Promise<PurchaseOrder[]> {
-    return this.purchaseOrderService.listRecentOrders(vendorId, limit);
+
+  async searchPurchaseOrders(filters: PurchaseOrderFilters): Promise<PurchaseOrder[]> {
+    return this.purchaseOrderService.searchPurchaseOrders(filters);
   }
 
-  async getPoStatus(poNumber: string): Promise<PurchaseOrder | undefined> {
-    return this.purchaseOrderService.getPoStatus(poNumber);
+  async getPurchaseOrder(idOrPoNumber: string): Promise<PurchaseOrder | undefined> {
+    return this.purchaseOrderService.getPurchaseOrder(idOrPoNumber);
+  }
+
+  async createPurchaseOrder(data: { vendor_ID: string; currency: string; items?: Array<{ materialId: string, quantity: number, unitPrice?: number }> }): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.createPurchaseOrder(data);
+  }
+
+  async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
+    return this.purchaseOrderService.addPOLineItem(poId, materialId, quantity, unitPrice);
+  }
+
+  async releasePurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.releasePurchaseOrder(id);
+  }
+
+  async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.cancelPurchaseOrder(id);
+  }
+
+  async receiveGoods(idOrPoNumber: string, partialItems?: Array<{ materialId: string, quantity: number }>): Promise<PurchaseOrder> {
+    return this.purchaseOrderService.receiveGoods(idOrPoNumber, partialItems);
   }
 
   // --- Inventory Methods ---
   async checkInventory(materialId: string): Promise<InventoryItem | undefined> {
     return this.inventoryService.checkInventory(materialId);
+  }
+
+  async listInventory(limit?: number): Promise<InventoryItem[]> {
+    return this.inventoryService.listInventory(limit);
+  }
+
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return this.inventoryService.getLowStockItems();
+  }
+
+  async issueGoods(materialId: string, quantity: number): Promise<InventoryItem> {
+    return this.inventoryService.issueGoods(materialId, quantity);
+  }
+
+  // --- Pricing Methods ---
+  getPricingService(): PricingService {
+    return this.pricingService;
   }
 }

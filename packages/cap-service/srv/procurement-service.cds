@@ -14,21 +14,28 @@ service ProcurementService {
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity PurchaseOrders as projection on db.PurchaseOrders {
     ID, poNumber, vendor, orderDate, status, currency, totalAmount, lineItems
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity POLineItems as projection on db.POLineItems {
     ID, purchaseOrder, material, quantity, unitPrice
   };
 
   @requires: 'authenticated-user'
-  @readonly
   entity InventoryItems as projection on db.InventoryItems {
     ID, materialId, description, quantityOnHand, reorderPoint, unit, warehouse
+  };
+
+  @requires: 'authenticated-user'
+  entity PurchasingInfoRecords as projection on db.PurchasingInfoRecords {
+    ID, vendor, material, price, currency, validFrom, validTo
+  };
+
+  @requires: 'authenticated-user'
+  entity Quotations as projection on db.Quotations {
+    ID, quotationId, vendor, material, quantity, price, currency, validUntil, status
   };
 
   // Bound function: encapsulates "is this material low on stock" logic

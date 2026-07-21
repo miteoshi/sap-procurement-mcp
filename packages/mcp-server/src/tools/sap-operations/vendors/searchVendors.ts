@@ -1,13 +1,14 @@
 import { z } from 'zod';
+import { VendorStatus } from '../../../types/procurement.js';
 import type { ProcurementService } from '../../../services/procurementService.js';
 import { withCorrelation } from '../../../config/logger.js';
 import { randomUUID } from 'node:crypto';
 
 export const searchVendorsInputSchema = z.object({
-  name: z.string().min(2).optional().describe("Vendor name or partial name, e.g. 'Bosch'"),
-  country: z.string().length(2).optional().describe("2-letter country code, e.g. 'DE'"),
-  status: z.enum(['ACTIVE', 'BLOCKED', 'INACTIVE']).optional().describe("Vendor status"),
-  limit: z.number().min(1).max(50).optional().describe("Max number of results to return"),
+  name: z.string().optional().describe("Filter by vendor name (partial match)"),
+  country: z.string().length(2).optional().describe("Filter by 2-letter country code"),
+  status: z.nativeEnum(VendorStatus).optional().describe("Filter by vendor status"),
+  limit: z.number().int().min(1).max(100).default(50).describe("Maximum number of results to return"),
 });
 
 export const searchVendorsTool = {
