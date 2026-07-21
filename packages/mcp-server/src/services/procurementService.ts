@@ -1,10 +1,11 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem, Quotation } from '../types/procurement.js';
 import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
 import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
 import { PricingService } from './sap-operations/pricing/pricingService.js';
+import { QuotationService, QuotationFilters } from './sap-operations/quotations/quotationService.js';
 
 /**
  * Facade service that delegates to domain-specific services.
@@ -17,12 +18,14 @@ export class ProcurementService {
   private readonly inventoryService: InventoryService;
   private readonly pricingService: PricingService;
   private readonly aiVendorService: AiVendorService;
+  private readonly quotationService: QuotationService;
 
   constructor(private readonly client: CapClient = new CapClient()) {
     this.vendorService = new VendorService(this.client);
     this.inventoryService = new InventoryService(this.client);
     this.pricingService = new PricingService(this.client);
-    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService);
+    this.quotationService = new QuotationService(this.client);
+    this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService, this.quotationService);
     this.aiVendorService = new AiVendorService(this.client);
   }
 
@@ -117,5 +120,22 @@ export class ProcurementService {
   // --- Pricing Methods ---
   getPricingService(): PricingService {
     return this.pricingService;
+  }
+
+  // --- Quotation Methods ---
+  async searchQuotations(filters?: QuotationFilters): Promise<Quotation[]> {
+    return this.quotationService.searchQuotations(filters);
+  }
+
+  async getQuotation(id: string): Promise<Quotation | undefined> {
+    return this.quotationService.getQuotation(id);
+  }
+
+  async acceptQuotation(id: string): Promise<Quotation> {
+    return this.quotationService.acceptQuotation(id);
+  }
+
+  async rejectQuotation(id: string): Promise<Quotation> {
+    return this.quotationService.rejectQuotation(id);
   }
 }

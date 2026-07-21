@@ -5,13 +5,15 @@ import { escapeOData } from '../../../utils/odataUtils.js';
 import { VendorService } from '../vendors/vendorService.js';
 import { InventoryService } from '../inventory/inventoryService.js';
 import { PricingService } from '../pricing/pricingService.js';
+import { QuotationService } from '../quotations/quotationService.js';
 
 export class PurchaseOrderService {
   constructor(
     private readonly client: CapClient,
     private readonly vendorService: VendorService,
     private readonly inventoryService: InventoryService,
-    private readonly pricingService: PricingService
+    private readonly pricingService: PricingService,
+    private readonly quotationService: QuotationService
   ) { }
 
   async searchPurchaseOrders(filters: PurchaseOrderFilters = {}): Promise<PurchaseOrder[]> {
@@ -133,7 +135,7 @@ export class PurchaseOrderService {
   }
 
   async createPurchaseOrderFromQuotation(quotationId: string): Promise<PurchaseOrder> {
-    const quotation = await this.pricingService.getQuotation(quotationId);
+    const quotation = await this.quotationService.getQuotation(quotationId);
     if (!quotation) {
       throw new Error(`Quotation '${quotationId}' not found.`);
     }
@@ -164,7 +166,7 @@ export class PurchaseOrderService {
       ]
     });
 
-    await this.pricingService.acceptQuotation(quotation.ID);
+    await this.quotationService.acceptQuotation(quotation.ID);
 
     return po;
   }

@@ -64,6 +64,12 @@ export interface PurchasingInfoRecord {
   validTo: string;
 }
 
+//Qutation is considered as an external data, it is not present in SAP.
+//It is sent by the vendor to the buyer and it is stored in the database.
+//It is used to compare the prices of different vendors.
+//When the buyer accepts the quotation, it is converted into a purchase order.
+//It is also used to track the status of the quotation.
+
 export interface Quotation {
   ID: string;
   quotationId: string;

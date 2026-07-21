@@ -26,7 +26,10 @@ import { issueGoodsTool } from './tools/sap-operations/inventory/issueGoods.js';
 
 import { getLastPurchasePriceTool } from './tools/sap-operations/pricing/getLastPurchasePrice.js';
 import { getVendorMaterialPriceTool } from './tools/sap-operations/pricing/getVendorMaterialPrice.js';
-import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/pricing/createPurchaseOrderFromQuote.js';
+import { searchQuotationsTool } from './tools/sap-operations/quotations/searchQuotations.js';
+import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/quotations/createPurchaseOrderFromQuote.js';
+import { compareSupplierQuotesTool } from './tools/ai-operations/quotations/compareSupplierQuotes.js';
+import { recommendBestSupplierTool } from './tools/ai-operations/quotations/recommendBestSupplier.js';
 
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
@@ -58,15 +61,20 @@ const tools = [
   checkLowStockTool,
   issueGoodsTool,
 
+  // Quotations
+  searchQuotationsTool,
+  createPurchaseOrderFromQuoteTool,
+
   // AI Operations
   vendorSummaryTool,
   supplierPerformanceTool,
   supplierSpendSummaryTool,
+  compareSupplierQuotesTool,
+  recommendBestSupplierTool,
 
   // Pricing Intelligence
   getLastPurchasePriceTool,
-  getVendorMaterialPriceTool,
-  createPurchaseOrderFromQuoteTool
+  getVendorMaterialPriceTool
 ];
 
 const server = new Server(

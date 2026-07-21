@@ -234,6 +234,20 @@ describe('ProcurementService', () => {
     );
   });
 
+  it('searchQuotations dynamically applies filters', async () => {
+    const client = mockClient({ value: [{ ID: 'q-uuid' }] });
+    const service = new ProcurementService(client);
+    await service.searchQuotations({ vendorId: 'v1', status: 'OPEN' });
+
+    expect(client.get).toHaveBeenCalledWith(
+      '/Quotations',
+      expect.objectContaining({
+        $filter: "vendor_ID eq 'v1' and status eq 'OPEN'",
+        $top: '50',
+      }),
+    );
+  });
+
   it('addPOLineItem sends POST request to /POLineItems', async () => {
     const client = mockClient({ ID: 'li-uuid' });
     const service = new ProcurementService(client);
