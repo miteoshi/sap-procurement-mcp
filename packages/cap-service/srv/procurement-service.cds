@@ -20,7 +20,7 @@ service ProcurementService {
 
   @requires: 'authenticated-user'
   entity POLineItems as projection on db.POLineItems {
-    ID, purchaseOrder, material, quantity, unitPrice
+    ID, purchaseOrder, material, quantity, receivedQuantity, unitPrice
   };
 
   @requires: 'authenticated-user'

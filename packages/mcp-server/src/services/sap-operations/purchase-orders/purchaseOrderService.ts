@@ -34,7 +34,7 @@ export class PurchaseOrderService {
     const queryParams: Record<string, string> = {
       $orderby: 'orderDate desc',
       $top: String(filters.limit || 50),
-      $expand: 'lineItems',
+      $expand: 'vendor,lineItems($expand=material)',
     };
 
     if (filterClauses.length > 0) {
@@ -60,7 +60,7 @@ export class PurchaseOrderService {
     const result = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
       $filter: `${filterField} eq '${escapeOData(idOrPoNumber)}'`,
       $top: '1',
-      $expand: 'lineItems',
+      $expand: 'vendor,lineItems($expand=material)',
     });
     return result.value[0];
   }

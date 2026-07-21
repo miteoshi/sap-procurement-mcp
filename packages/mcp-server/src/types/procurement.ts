@@ -29,6 +29,7 @@ export interface POLineItem {
   quantity: number;
   receivedQuantity?: number;
   unitPrice: number;
+  material?: InventoryItem;
 }
 
 export interface PurchaseOrder {
@@ -39,6 +40,7 @@ export interface PurchaseOrder {
   status: PurchaseOrderStatus;
   currency: string;
   totalAmount: number;
+  vendor?: Vendor;
   lineItems?: POLineItem[];
 }
 
