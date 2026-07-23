@@ -30,7 +30,7 @@ export class PricingService {
   async getVendorMaterialPrice(vendorId: string, materialId: string): Promise<number | undefined> {
     const today = new Date().toISOString().substring(0, 10);
     const result = await this.client.get<ODataResponse<PurchasingInfoRecord>>('/PurchasingInfoRecords', {
-      $filter: `vendor_ID eq '${escapeOData(vendorId)}' and material_ID eq '${escapeOData(materialId)}' and validFrom <= ${today} and validTo >= ${today}`,
+      $filter: `vendor_ID eq '${escapeOData(vendorId)}' and material_ID eq '${escapeOData(materialId)}' and validFrom le '${today}' and validTo ge '${today}'`,
       $orderby: 'validFrom desc',
       $top: '1'
     });
