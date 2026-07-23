@@ -29,7 +29,6 @@ import { getVendorMaterialPriceTool } from './tools/sap-operations/pricing/getVe
 import { searchQuotationsTool } from './tools/sap-operations/quotations/searchQuotations.js';
 import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/quotations/createPurchaseOrderFromQuote.js';
 import { compareSupplierQuotesTool } from './tools/ai-operations/quotations/compareSupplierQuotes.js';
-import { recommendBestSupplierTool } from './tools/ai-operations/quotations/recommendBestSupplier.js';
 
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
@@ -70,7 +69,6 @@ const tools = [
   supplierPerformanceTool,
   supplierSpendSummaryTool,
   compareSupplierQuotesTool,
-  recommendBestSupplierTool,
 
   // Pricing Intelligence
   getLastPurchasePriceTool,
