@@ -10,7 +10,7 @@ export interface QuotationFilters {
 }
 
 export class QuotationService {
-  constructor(private readonly client: CapClient) {}
+  constructor(private readonly client: CapClient) { }
 
   async searchQuotations(filters: QuotationFilters = {}): Promise<Quotation[]> {
     const filterClauses: string[] = [];
