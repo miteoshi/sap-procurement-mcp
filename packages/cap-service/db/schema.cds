@@ -72,4 +72,13 @@ entity SupplierInvoices : cuid, managed {
   currency      : String(3) default 'USD';
   totalAmount   : Decimal(15,2) @mandatory;
   status        : String(20) default 'CREATED'; // CREATED | VERIFIED | POSTED | BLOCKED | CANCELLED
+  lineItems     : Composition of many SupplierInvoiceItems on lineItems.invoice = $self;
+}
+
+entity SupplierInvoiceItems : cuid {
+  invoice   : Association to SupplierInvoices @mandatory;
+  material  : Association to InventoryItems @mandatory;
+  quantity  : Integer @mandatory;
+  unitPrice : Decimal(15,2);
+  amount    : Decimal(15,2);
 }

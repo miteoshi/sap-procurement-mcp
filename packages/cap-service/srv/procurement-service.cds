@@ -25,7 +25,12 @@ service ProcurementService {
 
   @requires: 'authenticated-user'
   entity SupplierInvoices as projection on db.SupplierInvoices {
-    ID, invoiceNumber, purchaseOrder, vendor, invoiceDate, postingDate, currency, totalAmount, status
+    ID, invoiceNumber, purchaseOrder, vendor, invoiceDate, postingDate, currency, totalAmount, status, lineItems
+  };
+
+  @requires: 'authenticated-user'
+  entity SupplierInvoiceItems as projection on db.SupplierInvoiceItems {
+    ID, invoice, material, quantity, unitPrice, amount
   };
 
   @requires: 'authenticated-user'
