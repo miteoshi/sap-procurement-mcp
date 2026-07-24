@@ -62,3 +62,14 @@ entity Quotations : cuid, managed {
   validUntil    : Date @mandatory;
   status        : String(20) default 'OPEN'; // OPEN | ACCEPTED | REJECTED
 }
+
+entity SupplierInvoices : cuid, managed {
+  invoiceNumber : String(30) @mandatory;
+  purchaseOrder : Association to PurchaseOrders @mandatory;
+  vendor        : Association to Vendors @mandatory;
+  invoiceDate   : Date;
+  postingDate   : Date;
+  currency      : String(3) default 'USD';
+  totalAmount   : Decimal(15,2) @mandatory;
+  status        : String(20) default 'CREATED'; // CREATED | VERIFIED | POSTED | BLOCKED | CANCELLED
+}

@@ -30,6 +30,14 @@ import { searchQuotationsTool } from './tools/sap-operations/quotations/searchQu
 import { createPurchaseOrderFromQuoteTool } from './tools/sap-operations/quotations/createPurchaseOrderFromQuote.js';
 import { compareSupplierQuotesTool } from './tools/ai-operations/quotations/compareSupplierQuotes.js';
 
+import { searchSupplierInvoicesTool } from './tools/sap-operations/invoices/searchSupplierInvoices.js';
+import { getSupplierInvoiceTool } from './tools/sap-operations/invoices/getSupplierInvoice.js';
+import { createSupplierInvoiceTool } from './tools/sap-operations/invoices/createSupplierInvoice.js';
+import { verifySupplierInvoiceTool } from './tools/sap-operations/invoices/verifySupplierInvoice.js';
+import { postSupplierInvoiceTool } from './tools/sap-operations/invoices/postSupplierInvoice.js';
+import { cancelSupplierInvoiceTool } from './tools/sap-operations/invoices/cancelSupplierInvoice.js';
+import { summarizeInvoiceDiscrepanciesTool } from './tools/ai-operations/invoices/summarizeInvoiceDiscrepancies.js';
+
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
 import { supplierSpendSummaryTool } from './tools/ai-operations/vendors/supplierSpendSummary.js';
@@ -64,11 +72,20 @@ const tools = [
   searchQuotationsTool,
   createPurchaseOrderFromQuoteTool,
 
+  // Invoices
+  searchSupplierInvoicesTool,
+  getSupplierInvoiceTool,
+  createSupplierInvoiceTool,
+  verifySupplierInvoiceTool,
+  postSupplierInvoiceTool,
+  cancelSupplierInvoiceTool,
+
   // AI Operations
   vendorSummaryTool,
   supplierPerformanceTool,
   supplierSpendSummaryTool,
   compareSupplierQuotesTool,
+  summarizeInvoiceDiscrepanciesTool,
 
   // Pricing Intelligence
   getLastPurchasePriceTool,

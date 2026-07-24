@@ -439,4 +439,109 @@ describe('ProcurementService', () => {
     );
     expect(result.quantityOnHand).toBe(40);
   });
+
+  // --- Supplier Invoice Tests ---
+  it('createInvoice validates PO status and currency before creation', async () => {
+    const client = mockClient({ value: [{ ID: 'po-1', poNumber: 'PO-100', status: 'RECEIVED', currency: 'USD', vendor_ID: 'v1' }] });
+    const service = new ProcurementService(client);
+    (client.post as any).mockResolvedValue({ ID: 'inv-1', invoiceNumber: 'INV-001' });
+
+    // Mock duplicate check returning empty
+    (client.get as any).mockImplementation((path: string, options: any) => {
+      if (path === '/PurchaseOrders') {
+        return Promise.resolve({ value: [{ ID: 'po-1', poNumber: 'PO-100', status: 'RECEIVED', currency: 'USD', vendor_ID: 'v1' }] });
+      }
+      if (path === '/SupplierInvoices') {
+        return Promise.resolve({ value: [] });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    const result = await service.createInvoice({
+      purchaseOrderId: 'po-1',
+      invoiceNumber: 'INV-001',
+      invoiceDate: '2026-07-24',
+      postingDate: '2026-07-24',
+      currency: 'USD',
+      totalAmount: 500
+    });
+
+    expect(client.post).toHaveBeenCalledWith('/SupplierInvoices', expect.objectContaining({
+      invoiceNumber: 'INV-001',
+      purchaseOrder_ID: 'po-1',
+      totalAmount: 500,
+      status: 'CREATED'
+    }));
+    expect(result.ID).toBe('inv-1');
+  });
+
+  it('verifyInvoice transitions to VERIFIED when 3-way match passes', async () => {
+    const client = mockClient({ value: [] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/SupplierInvoices') {
+        return Promise.resolve({
+          value: [{
+            ID: 'inv-1',
+            invoiceNumber: 'INV-001',
+            status: 'CREATED',
+            vendor_ID: 'v1',
+            currency: 'USD',
+            totalAmount: 1000,
+            purchaseOrder: {
+              vendor_ID: 'v1',
+              currency: 'USD',
+              lineItems: [
+                { receivedQuantity: 10, unitPrice: 50 },
+                { receivedQuantity: 5, unitPrice: 100 }
+              ]
+            }
+          }]
+        });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    const result = await service.verifyInvoice('inv-1');
+
+    expect(result.success).toBe(true);
+    expect(result.status).toBe('VERIFIED');
+    expect(client.patch).toHaveBeenCalledWith('/SupplierInvoices(inv-1)', { status: 'VERIFIED' });
+  });
+
+  it('verifyInvoice transitions to BLOCKED when amount exceeds received value', async () => {
+    const client = mockClient({ value: [] });
+    const service = new ProcurementService(client);
+    
+    (client.get as any).mockImplementation((path: string) => {
+      if (path === '/SupplierInvoices') {
+        return Promise.resolve({
+          value: [{
+            ID: 'inv-1',
+            invoiceNumber: 'INV-001',
+            status: 'CREATED',
+            vendor_ID: 'v1',
+            currency: 'USD',
+            totalAmount: 1500, // over-billing!
+            purchaseOrder: {
+              vendor_ID: 'v1',
+              currency: 'USD',
+              lineItems: [
+                { receivedQuantity: 10, unitPrice: 50 },
+                { receivedQuantity: 5, unitPrice: 100 }
+              ]
+            }
+          }]
+        });
+      }
+      return Promise.resolve({ value: [] });
+    });
+
+    const result = await service.verifyInvoice('inv-1');
+
+    expect(result.success).toBe(false);
+    expect(result.status).toBe('BLOCKED');
+    expect(client.patch).toHaveBeenCalledWith('/SupplierInvoices(inv-1)', { status: 'BLOCKED' });
+  });
 });

@@ -22,6 +22,14 @@ export enum PurchaseOrderStatus {
   CANCELLED = 'CANCELLED'
 }
 
+export enum SupplierInvoiceStatus {
+  CREATED = 'CREATED',
+  VERIFIED = 'VERIFIED',
+  POSTED = 'POSTED',
+  BLOCKED = 'BLOCKED',
+  CANCELLED = 'CANCELLED'
+}
+
 export interface POLineItem {
   ID: string;
   purchaseOrder_ID: string;
@@ -82,6 +90,22 @@ export interface Quotation {
   status: 'OPEN' | 'ACCEPTED' | 'REJECTED';
 }
 
+export interface SupplierInvoice {
+  ID: string;
+  invoiceNumber: string;
+  purchaseOrder_ID: string;
+  vendor_ID: string;
+  invoiceDate: string;
+  postingDate: string;
+  currency: string;
+  totalAmount: number;
+  status: SupplierInvoiceStatus;
+  
+  // Expanded associations
+  purchaseOrder?: PurchaseOrder;
+  vendor?: Vendor;
+}
+
 export interface ODataResponse<T> {
   value: T[];
 }
@@ -99,6 +123,15 @@ export interface VendorFilters {
 export interface PurchaseOrderFilters {
   vendorId?: string;
   status?: PurchaseOrderStatus;
+  fromDate?: string;
+  toDate?: string;
+  limit?: number;
+}
+
+export interface SupplierInvoiceFilters {
+  purchaseOrderId?: string;
+  vendorId?: string;
+  status?: SupplierInvoiceStatus;
   fromDate?: string;
   toDate?: string;
   limit?: number;

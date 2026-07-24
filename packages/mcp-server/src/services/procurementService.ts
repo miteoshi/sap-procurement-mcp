@@ -6,6 +6,8 @@ import { InventoryService } from './sap-operations/inventory/inventoryService.js
 import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
 import { PricingService } from './sap-operations/pricing/pricingService.js';
 import { QuotationService, QuotationFilters } from './sap-operations/quotations/quotationService.js';
+import { InvoiceService } from './sap-operations/invoices/invoiceService.js';
+import type { SupplierInvoice, SupplierInvoiceFilters } from '../types/procurement.js';
 
 /**
  * Facade service that delegates to domain-specific services.
@@ -19,12 +21,14 @@ export class ProcurementService {
   private readonly pricingService: PricingService;
   private readonly aiVendorService: AiVendorService;
   private readonly quotationService: QuotationService;
+  private readonly invoiceService: InvoiceService;
 
   constructor(private readonly client: CapClient = new CapClient()) {
     this.vendorService = new VendorService(this.client);
     this.inventoryService = new InventoryService(this.client);
     this.pricingService = new PricingService(this.client);
     this.quotationService = new QuotationService(this.client);
+    this.invoiceService = new InvoiceService(this.client);
     this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService, this.quotationService);
     this.aiVendorService = new AiVendorService(this.client);
   }
@@ -137,5 +141,37 @@ export class ProcurementService {
 
   async rejectQuotation(id: string): Promise<Quotation> {
     return this.quotationService.rejectQuotation(id);
+  }
+
+  // --- Supplier Invoice Methods ---
+  async searchInvoices(filters?: SupplierInvoiceFilters): Promise<SupplierInvoice[]> {
+    return this.invoiceService.searchInvoices(filters);
+  }
+
+  async getInvoice(idOrInvoiceNumber: string): Promise<SupplierInvoice | undefined> {
+    return this.invoiceService.getInvoice(idOrInvoiceNumber);
+  }
+
+  async createInvoice(data: {
+    purchaseOrderId: string;
+    invoiceNumber: string;
+    invoiceDate: string;
+    postingDate: string;
+    currency: string;
+    totalAmount: number;
+  }): Promise<SupplierInvoice> {
+    return this.invoiceService.createInvoice(data);
+  }
+
+  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any }> {
+    return this.invoiceService.verifyInvoice(invoiceId);
+  }
+
+  async postInvoice(invoiceId: string): Promise<SupplierInvoice> {
+    return this.invoiceService.postInvoice(invoiceId);
+  }
+
+  async cancelInvoice(invoiceId: string): Promise<SupplierInvoice> {
+    return this.invoiceService.cancelInvoice(invoiceId);
   }
 }
