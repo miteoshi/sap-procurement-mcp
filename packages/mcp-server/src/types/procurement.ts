@@ -97,7 +97,7 @@ export interface SupplierInvoiceItem {
   quantity: number;
   unitPrice?: number;
   amount?: number;
-  
+
   material?: InventoryItem;
 }
 
@@ -111,7 +111,7 @@ export interface SupplierInvoice {
   currency: string;
   totalAmount: number;
   status: SupplierInvoiceStatus;
-  
+
   // Expanded associations
   purchaseOrder?: PurchaseOrder;
   vendor?: Vendor;
@@ -123,6 +123,7 @@ export interface InvoiceVerificationChecks {
   currency: boolean;
   quantity: boolean;
   price: boolean;
+  material: boolean;
 }
 
 export interface ODataResponse<T> {

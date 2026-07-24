@@ -138,6 +138,7 @@ export class InvoiceService {
       currency: invoice.currency === po.currency,
       quantity: true,
       price: true,
+      material: true,
     };
 
     // Calculate if invoice item quantities exceed received quantities
@@ -145,13 +146,15 @@ export class InvoiceService {
       throw new Error("Invoice contains no line items.");
     }
 
+
+    const poItemsByMaterial = new Map(
+      (po.lineItems ?? []).map(item => [item.material_ID, item]));
+
     for (const invItem of invoice.lineItems) {
-      const matchingPoItem = (po.lineItems || []).find(
-        pi => pi.material_ID === invItem.material_ID
-      );
+      const matchingPoItem = poItemsByMaterial.get(invItem.material_ID);
 
       if (!matchingPoItem) {
-        checks.quantity = false;
+        checks.material = false;
         failures.push(
           `Material ${invItem.material_ID} not found on Purchase Order.`
         );
@@ -189,7 +192,7 @@ export class InvoiceService {
 
 
 
-    const allPassed = checks.vendor && checks.currency && checks.quantity && checks.price;
+    const allPassed = checks.vendor && checks.currency && checks.material && checks.quantity && checks.price;
     const newStatus = allPassed ? 'VERIFIED' : 'BLOCKED';
 
     await this.client.patch(`/SupplierInvoices(${invoice.ID})`, {
