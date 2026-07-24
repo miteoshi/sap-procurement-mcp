@@ -463,14 +463,18 @@ describe('ProcurementService', () => {
       invoiceDate: '2026-07-24',
       postingDate: '2026-07-24',
       currency: 'USD',
-      totalAmount: 500
+      totalAmount: 500,
+      items: [{ materialId: 'mat-1', quantity: 10, unitPrice: 50 }]
     });
 
     expect(client.post).toHaveBeenCalledWith('/SupplierInvoices', expect.objectContaining({
       invoiceNumber: 'INV-001',
       purchaseOrder_ID: 'po-1',
       totalAmount: 500,
-      status: 'CREATED'
+      status: 'CREATED',
+      lineItems: [
+        { material_ID: 'mat-1', quantity: 10, unitPrice: 50, amount: 500 }
+      ]
     }));
     expect(result.ID).toBe('inv-1');
   });
@@ -493,10 +497,14 @@ describe('ProcurementService', () => {
               vendor_ID: 'v1',
               currency: 'USD',
               lineItems: [
-                { receivedQuantity: 10, unitPrice: 50 },
-                { receivedQuantity: 5, unitPrice: 100 }
+                { material_ID: 'mat-1', receivedQuantity: 10, unitPrice: 50 },
+                { material_ID: 'mat-2', receivedQuantity: 5, unitPrice: 100 }
               ]
-            }
+            },
+            lineItems: [
+              { material_ID: 'mat-1', quantity: 10 },
+              { material_ID: 'mat-2', quantity: 5 }
+            ]
           }]
         });
       }
@@ -507,6 +515,7 @@ describe('ProcurementService', () => {
 
     expect(result.success).toBe(true);
     expect(result.status).toBe('VERIFIED');
+    expect(result.failures).toHaveLength(0);
     expect(client.patch).toHaveBeenCalledWith('/SupplierInvoices(inv-1)', { status: 'VERIFIED' });
   });
 
@@ -523,15 +532,17 @@ describe('ProcurementService', () => {
             status: 'CREATED',
             vendor_ID: 'v1',
             currency: 'USD',
-            totalAmount: 1500, // over-billing!
+            totalAmount: 1500,
             purchaseOrder: {
               vendor_ID: 'v1',
               currency: 'USD',
               lineItems: [
-                { receivedQuantity: 10, unitPrice: 50 },
-                { receivedQuantity: 5, unitPrice: 100 }
+                { material_ID: 'mat-1', receivedQuantity: 10, unitPrice: 50 }
               ]
-            }
+            },
+            lineItems: [
+              { material_ID: 'mat-1', quantity: 15 } // 15 > 10
+            ]
           }]
         });
       }
@@ -542,6 +553,7 @@ describe('ProcurementService', () => {
 
     expect(result.success).toBe(false);
     expect(result.status).toBe('BLOCKED');
+    expect(result.failures).toContain('Invoice quantity exceeds received quantity');
     expect(client.patch).toHaveBeenCalledWith('/SupplierInvoices(inv-1)', { status: 'BLOCKED' });
   });
 });

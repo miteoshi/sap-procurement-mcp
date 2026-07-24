@@ -90,6 +90,17 @@ export interface Quotation {
   status: 'OPEN' | 'ACCEPTED' | 'REJECTED';
 }
 
+export interface SupplierInvoiceItem {
+  ID: string;
+  invoice_ID: string;
+  material_ID: string;
+  quantity: number;
+  unitPrice?: number;
+  amount?: number;
+  
+  material?: InventoryItem;
+}
+
 export interface SupplierInvoice {
   ID: string;
   invoiceNumber: string;
@@ -104,6 +115,13 @@ export interface SupplierInvoice {
   // Expanded associations
   purchaseOrder?: PurchaseOrder;
   vendor?: Vendor;
+  lineItems?: SupplierInvoiceItem[];
+}
+
+export interface InvoiceVerificationChecks {
+  vendor: boolean;
+  currency: boolean;
+  amountWithinReceived: boolean;
 }
 
 export interface ODataResponse<T> {

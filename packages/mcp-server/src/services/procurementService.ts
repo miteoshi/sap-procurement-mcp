@@ -159,11 +159,12 @@ export class ProcurementService {
     postingDate: string;
     currency: string;
     totalAmount: number;
+    items: Array<{ materialId: string; quantity: number; unitPrice: number }>;
   }): Promise<SupplierInvoice> {
     return this.invoiceService.createInvoice(data);
   }
 
-  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any }> {
+  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any; failures: string[] }> {
     return this.invoiceService.verifyInvoice(invoiceId);
   }
 

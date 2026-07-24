@@ -10,7 +10,12 @@ export const createSupplierInvoiceTool = {
     invoiceDate: z.string().describe('YYYY-MM-DD'),
     postingDate: z.string().describe('YYYY-MM-DD'),
     currency: z.string().max(3),
-    totalAmount: z.number().positive().describe('Total amount being invoiced')
+    totalAmount: z.number().positive().describe('Total amount being invoiced'),
+    items: z.array(z.object({
+      materialId: z.string(),
+      quantity: z.number().positive(),
+      unitPrice: z.number().positive()
+    })).describe('Line items on the invoice')
   }),
   handler: async (service: ProcurementService, args: any) => {
     return service.createInvoice(args);

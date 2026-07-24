@@ -56,6 +56,7 @@ export class InvoiceService {
     postingDate: string;
     currency: string;
     totalAmount: number;
+    items: Array<{ materialId: string; quantity: number; unitPrice: number }>;
   }): Promise<SupplierInvoice> {
     
     // 1. Validate PO exists and is received
@@ -86,7 +87,14 @@ export class InvoiceService {
       throw new Error(`Invoice number '${data.invoiceNumber}' already exists.`);
     }
 
-    // 3. Create invoice
+    // 3. Create invoice with deep insert for line items
+    const lineItems = data.items.map(item => ({
+      material_ID: item.materialId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      amount: item.quantity * item.unitPrice
+    }));
+
     return this.client.post<SupplierInvoice>('/SupplierInvoices', {
       invoiceNumber: data.invoiceNumber,
       purchaseOrder_ID: po.ID,
@@ -95,11 +103,12 @@ export class InvoiceService {
       postingDate: data.postingDate,
       currency: data.currency,
       totalAmount: data.totalAmount,
-      status: 'CREATED'
+      status: 'CREATED',
+      lineItems
     });
   }
 
-  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any }> {
+  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any; failures: string[] }> {
     const invoice = await this.getInvoice(invoiceId);
     if (!invoice) {
       throw new Error(`Invoice ${invoiceId} not found.`);
@@ -118,20 +127,31 @@ export class InvoiceService {
     const checks = {
       vendor: invoice.vendor_ID === po.vendor_ID,
       currency: invoice.currency === po.currency,
-      amount: false,
+      amountWithinReceived: true,
     };
 
-    // Calculate the expected maximum billing amount based on what was actually received.
-    let expectedMaxAmount = 0;
-    if (po.lineItems) {
-      for (const item of po.lineItems) {
-        expectedMaxAmount += (item.receivedQuantity || 0) * (item.unitPrice || 0);
+    // Calculate if invoice item quantities exceed received quantities
+    if (invoice.lineItems) {
+      for (const invItem of invoice.lineItems) {
+        const matchingPoItem = (po.lineItems || []).find(pi => pi.material_ID === invItem.material_ID);
+        const receivedQty = matchingPoItem ? (matchingPoItem.receivedQuantity || 0) : 0;
+        
+        if (invItem.quantity > receivedQty) {
+          checks.amountWithinReceived = false;
+          break;
+        }
       }
+    } else {
+      // If no invoice items provided, fail verification
+      checks.amountWithinReceived = false;
     }
 
-    checks.amount = invoice.totalAmount <= expectedMaxAmount;
+    const failures: string[] = [];
+    if (!checks.vendor) failures.push("Vendor mismatch");
+    if (!checks.currency) failures.push("Currency mismatch");
+    if (!checks.amountWithinReceived) failures.push("Invoice quantity exceeds received quantity");
 
-    const allPassed = checks.vendor && checks.currency && checks.amount;
+    const allPassed = checks.vendor && checks.currency && checks.amountWithinReceived;
     const newStatus = allPassed ? 'VERIFIED' : 'BLOCKED';
 
     await this.client.patch(`/SupplierInvoices(${invoice.ID})`, {
@@ -141,7 +161,8 @@ export class InvoiceService {
     return {
       success: allPassed,
       status: newStatus,
-      checks
+      checks,
+      failures
     };
   }
 
