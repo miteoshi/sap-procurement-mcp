@@ -45,7 +45,7 @@ export class InvoiceService {
     const result = await this.client.get<ODataResponse<SupplierInvoice>>('/SupplierInvoices', {
       $filter: `${filterField} eq '${escapeOData(idOrInvoiceNumber)}'`,
       $top: '1',
-      $expand: 'vendor,purchaseOrder($expand=lineItems)'
+      $expand: 'vendor,lineItems($expand=material),purchaseOrder($expand=lineItems($expand=material))'
     });
     return result.value[0];
   }
@@ -63,7 +63,8 @@ export class InvoiceService {
     // 1. Validate PO exists and is received
     const poResult = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
       $filter: `ID eq '${escapeOData(data.purchaseOrderId)}' or poNumber eq '${escapeOData(data.purchaseOrderId)}'`,
-      $top: '1'
+      $top: '1',
+      $expand: 'lineItems($expand=material)'
     });
 
     const po = poResult.value[0];
@@ -89,12 +90,19 @@ export class InvoiceService {
     }
 
     // 3. Create invoice with deep insert for line items
-    const lineItems = data.items.map(item => ({
-      material_ID: item.materialId,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      amount: item.quantity * item.unitPrice
-    }));
+    const lineItems = data.items.map(item => {
+      // Find the corresponding PO line item to resolve the UUID if the user passed a human-readable ID
+      const poItem = po.lineItems?.find(pi => 
+        pi.material_ID === item.materialId || pi.material?.materialId === item.materialId
+      );
+
+      return {
+        material_ID: poItem ? poItem.material_ID : item.materialId, // Use resolved UUID if found
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        amount: item.quantity * item.unitPrice
+      };
+    });
 
     return this.client.post<SupplierInvoice>('/SupplierInvoices', {
       invoiceNumber: data.invoiceNumber,
@@ -147,11 +155,15 @@ export class InvoiceService {
     }
 
 
-    const poItemsByMaterial = new Map(
-      (po.lineItems ?? []).map(item => [item.material_ID, item]));
+
 
     for (const invItem of invoice.lineItems) {
-      const matchingPoItem = poItemsByMaterial.get(invItem.material_ID);
+      // Robust matching: Try to match by UUID or fallback to the human-readable materialId
+      const matchingPoItem = (po.lineItems || []).find(pi => 
+        pi.material_ID === invItem.material_ID || 
+        (pi.material && pi.material.materialId === invItem.material_ID) ||
+        (invItem.material && pi.material && pi.material.materialId === invItem.material.materialId)
+      );
 
       if (!matchingPoItem) {
         checks.material = false;
