@@ -92,7 +92,7 @@ export class InvoiceService {
     // 3. Create invoice with deep insert for line items
     const lineItems = data.items.map(item => {
       // Find the corresponding PO line item to resolve the UUID if the user passed a human-readable ID
-      const poItem = po.lineItems?.find(pi => 
+      const poItem = po.lineItems?.find(pi =>
         pi.material_ID === item.materialId || pi.material?.materialId === item.materialId
       );
 
@@ -159,8 +159,8 @@ export class InvoiceService {
 
     for (const invItem of invoice.lineItems) {
       // Robust matching: Try to match by UUID or fallback to the human-readable materialId
-      const matchingPoItem = (po.lineItems || []).find(pi => 
-        pi.material_ID === invItem.material_ID || 
+      const matchingPoItem = (po.lineItems || []).find(pi =>
+        pi.material_ID === invItem.material_ID ||
         (pi.material && pi.material.materialId === invItem.material_ID) ||
         (invItem.material && pi.material && pi.material.materialId === invItem.material.materialId)
       );
