@@ -1,9 +1,10 @@
 import type { CapClient } from '../../../clients/capClient.js';
-import type { SupplierInvoice, SupplierInvoiceFilters, ODataResponse, PurchaseOrder } from '../../../types/procurement.js';
+import type { SupplierInvoice, SupplierInvoiceFilters, ODataResponse, PurchaseOrder, InvoiceVerificationChecks } from '../../../types/procurement.js';
+import { PurchaseOrderStatus } from '../../../types/procurement.js';
 import { escapeOData } from '../../../utils/odataUtils.js';
 
 export class InvoiceService {
-  constructor(private readonly client: CapClient) {}
+  constructor(private readonly client: CapClient) { }
 
   async searchInvoices(filters: SupplierInvoiceFilters = {}): Promise<SupplierInvoice[]> {
     const filterClauses: string[] = [];
@@ -58,13 +59,13 @@ export class InvoiceService {
     totalAmount: number;
     items: Array<{ materialId: string; quantity: number; unitPrice: number }>;
   }): Promise<SupplierInvoice> {
-    
+
     // 1. Validate PO exists and is received
     const poResult = await this.client.get<ODataResponse<PurchaseOrder>>('/PurchaseOrders', {
       $filter: `ID eq '${escapeOData(data.purchaseOrderId)}' or poNumber eq '${escapeOData(data.purchaseOrderId)}'`,
       $top: '1'
     });
-    
+
     const po = poResult.value[0];
     if (!po) {
       throw new Error(`Purchase order ${data.purchaseOrderId} not found.`);
@@ -108,8 +109,10 @@ export class InvoiceService {
     });
   }
 
-  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any; failures: string[] }> {
+  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: InvoiceVerificationChecks; failures: string[] }> {
     const invoice = await this.getInvoice(invoiceId);
+
+
     if (!invoice) {
       throw new Error(`Invoice ${invoiceId} not found.`);
     }
@@ -123,35 +126,70 @@ export class InvoiceService {
       throw new Error(`Associated Purchase Order for invoice ${invoiceId} could not be loaded.`);
     }
 
-    // Three-way match checks
-    const checks = {
-      vendor: invoice.vendor_ID === po.vendor_ID,
-      currency: invoice.currency === po.currency,
-      amountWithinReceived: true,
-    };
-
-    // Calculate if invoice item quantities exceed received quantities
-    if (invoice.lineItems) {
-      for (const invItem of invoice.lineItems) {
-        const matchingPoItem = (po.lineItems || []).find(pi => pi.material_ID === invItem.material_ID);
-        const receivedQty = matchingPoItem ? (matchingPoItem.receivedQuantity || 0) : 0;
-        
-        if (invItem.quantity > receivedQty) {
-          checks.amountWithinReceived = false;
-          break;
-        }
-      }
-    } else {
-      // If no invoice items provided, fail verification
-      checks.amountWithinReceived = false;
+    if (po.status !== PurchaseOrderStatus.RECEIVED && po.status !== PurchaseOrderStatus.PARTIALLY_RECEIVED) {
+      throw new Error(`Purchase Order ${po.poNumber} has not received goods yet.`);
     }
 
     const failures: string[] = [];
-    if (!checks.vendor) failures.push("Vendor mismatch");
-    if (!checks.currency) failures.push("Currency mismatch");
-    if (!checks.amountWithinReceived) failures.push("Invoice quantity exceeds received quantity");
 
-    const allPassed = checks.vendor && checks.currency && checks.amountWithinReceived;
+    // Three-way match checks
+    const checks: InvoiceVerificationChecks = {
+      vendor: invoice.vendor_ID === po.vendor_ID,
+      currency: invoice.currency === po.currency,
+      quantity: true,
+      price: true,
+    };
+
+    // Calculate if invoice item quantities exceed received quantities
+    if (!invoice.lineItems || invoice.lineItems.length === 0) {
+      throw new Error("Invoice contains no line items.");
+    }
+
+    for (const invItem of invoice.lineItems) {
+      const matchingPoItem = (po.lineItems || []).find(
+        pi => pi.material_ID === invItem.material_ID
+      );
+
+      if (!matchingPoItem) {
+        checks.quantity = false;
+        failures.push(
+          `Material ${invItem.material_ID} not found on Purchase Order.`
+        );
+        continue;
+      }
+
+      const receivedQty = matchingPoItem.receivedQuantity ?? 0;
+
+      if (invItem.quantity > receivedQty) {
+        checks.quantity = false;
+      }
+
+      // Production-style cents comparison to avoid floating-point issues
+      const invCents = Math.round(Number(invItem.unitPrice) * 100);
+      const poCents = Math.round(Number(matchingPoItem.unitPrice) * 100);
+
+      if (invCents !== poCents) {
+        checks.price = false;
+      }
+    }
+
+    if (!checks.vendor)
+      failures.push("Vendor mismatch");
+
+    if (!checks.currency)
+      failures.push("Currency mismatch");
+
+    if (!checks.quantity)
+      failures.push("Invoice quantity exceeds received quantity");
+
+    if (!checks.price)
+      failures.push("Invoice unit price differs from Purchase Order");
+
+
+
+
+
+    const allPassed = checks.vendor && checks.currency && checks.quantity && checks.price;
     const newStatus = allPassed ? 'VERIFIED' : 'BLOCKED';
 
     await this.client.patch(`/SupplierInvoices(${invoice.ID})`, {

@@ -164,7 +164,7 @@ export class ProcurementService {
     return this.invoiceService.createInvoice(data);
   }
 
-  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: any; failures: string[] }> {
+  async verifyInvoice(invoiceId: string): Promise<{ success: boolean; status: string; checks: import('../types/procurement.js').InvoiceVerificationChecks; failures: string[] }> {
     return this.invoiceService.verifyInvoice(invoiceId);
   }
 

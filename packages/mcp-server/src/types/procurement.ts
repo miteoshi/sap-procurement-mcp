@@ -121,7 +121,8 @@ export interface SupplierInvoice {
 export interface InvoiceVerificationChecks {
   vendor: boolean;
   currency: boolean;
-  amountWithinReceived: boolean;
+  quantity: boolean;
+  price: boolean;
 }
 
 export interface ODataResponse<T> {

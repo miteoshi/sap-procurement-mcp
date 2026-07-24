@@ -496,14 +496,15 @@ describe('ProcurementService', () => {
             purchaseOrder: {
               vendor_ID: 'v1',
               currency: 'USD',
+              status: 'RECEIVED',
               lineItems: [
                 { material_ID: 'mat-1', receivedQuantity: 10, unitPrice: 50 },
                 { material_ID: 'mat-2', receivedQuantity: 5, unitPrice: 100 }
               ]
             },
             lineItems: [
-              { material_ID: 'mat-1', quantity: 10 },
-              { material_ID: 'mat-2', quantity: 5 }
+              { material_ID: 'mat-1', quantity: 10, unitPrice: 50 },
+              { material_ID: 'mat-2', quantity: 5, unitPrice: 100 }
             ]
           }]
         });
@@ -536,12 +537,13 @@ describe('ProcurementService', () => {
             purchaseOrder: {
               vendor_ID: 'v1',
               currency: 'USD',
+              status: 'RECEIVED',
               lineItems: [
                 { material_ID: 'mat-1', receivedQuantity: 10, unitPrice: 50 }
               ]
             },
             lineItems: [
-              { material_ID: 'mat-1', quantity: 15 } // 15 > 10
+              { material_ID: 'mat-1', quantity: 15, unitPrice: 50 } // 15 > 10
             ]
           }]
         });
