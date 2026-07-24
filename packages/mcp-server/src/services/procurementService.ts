@@ -1,5 +1,5 @@
 import { CapClient } from '../clients/capClient.js';
-import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem, Quotation } from '../types/procurement.js';
+import type { InventoryItem, PurchaseOrder, Vendor, VendorFilters, PurchaseOrderFilters, POLineItem, Quotation, SupplierInvoice, SupplierInvoiceFilters } from '../types/procurement.js';
 import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
@@ -7,7 +7,7 @@ import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
 import { PricingService } from './sap-operations/pricing/pricingService.js';
 import { QuotationService, QuotationFilters } from './sap-operations/quotations/quotationService.js';
 import { InvoiceService } from './sap-operations/invoices/invoiceService.js';
-import type { SupplierInvoice, SupplierInvoiceFilters } from '../types/procurement.js';
+
 
 /**
  * Facade service that delegates to domain-specific services.
