@@ -172,8 +172,16 @@ export class PurchaseOrderService {
   }
 
   async addPOLineItem(poId: string, materialId: string, quantity: number, unitPrice: number): Promise<POLineItem> {
+    const po = await this.getPurchaseOrder(poId);
+    if (!po) {
+      throw new Error(`Purchase order ${poId} not found.`);
+    }
+    if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
+      throw new Error(`Cannot add line items to a purchase order that is ${po.status}.`);
+    }
+
     return this.client.post<POLineItem>('/POLineItems', {
-      purchaseOrder_ID: poId,
+      purchaseOrder_ID: po.ID,
       material_ID: materialId,
       quantity,
       unitPrice
@@ -181,13 +189,29 @@ export class PurchaseOrderService {
   }
 
   async releasePurchaseOrder(id: string): Promise<PurchaseOrder> {
-    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
+    const po = await this.getPurchaseOrder(id);
+    if (!po) {
+      throw new Error(`Purchase order ${id} not found.`);
+    }
+    if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
+      throw new Error(`Cannot release a purchase order that is ${po.status}.`);
+    }
+
+    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${po.ID})`, {
       status: 'RELEASED'
     });
   }
 
   async cancelPurchaseOrder(id: string): Promise<PurchaseOrder> {
-    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${escapeOData(id)})`, {
+    const po = await this.getPurchaseOrder(id);
+    if (!po) {
+      throw new Error(`Purchase order ${id} not found.`);
+    }
+    if (po.status === 'RECEIVED' || po.status === 'PARTIALLY_RECEIVED' || po.status === 'CANCELLED') {
+      throw new Error(`Cannot cancel a purchase order that is ${po.status}.`);
+    }
+
+    return this.client.patch<PurchaseOrder>(`/PurchaseOrders(${po.ID})`, {
       status: 'CANCELLED'
     });
   }

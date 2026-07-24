@@ -250,6 +250,7 @@ describe('ProcurementService', () => {
 
   it('addPOLineItem sends POST request to /POLineItems', async () => {
     const client = mockClient({ ID: 'li-uuid' });
+    (client.get as any).mockResolvedValue({ value: [{ ID: 'po-uuid', status: 'CREATED' }] });
     const service = new ProcurementService(client);
 
     const result = await service.addPOLineItem('po-uuid', 'mat-1', 5, 20);
@@ -263,6 +264,7 @@ describe('ProcurementService', () => {
 
   it('releasePurchaseOrder updates status to RELEASED', async () => {
     const client = mockClient({ ID: 'po-uuid', status: 'RELEASED' });
+    (client.get as any).mockResolvedValue({ value: [{ ID: 'po-uuid', status: 'CREATED' }] });
     const service = new ProcurementService(client);
 
     const result = await service.releasePurchaseOrder('po-uuid');
@@ -276,6 +278,7 @@ describe('ProcurementService', () => {
 
   it('cancelPurchaseOrder updates status to CANCELLED', async () => {
     const client = mockClient({ ID: 'po-uuid', status: 'CANCELLED' });
+    (client.get as any).mockResolvedValue({ value: [{ ID: 'po-uuid', status: 'CREATED' }] });
     const service = new ProcurementService(client);
 
     const result = await service.cancelPurchaseOrder('po-uuid');
