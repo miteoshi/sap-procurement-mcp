@@ -41,6 +41,10 @@ import { summarizeInvoiceDiscrepanciesTool } from './tools/ai-operations/invoice
 import { vendorSummaryTool } from './tools/ai-operations/vendors/vendorSummary.js';
 import { supplierPerformanceTool } from './tools/ai-operations/vendors/supplierPerformance.js';
 import { supplierSpendSummaryTool } from './tools/ai-operations/vendors/supplierSpendSummary.js';
+
+import { procurementHealthCheckTool } from './tools/ai-operations/procurement/procurementHealthCheck.js';
+import { procurementTimelineTool } from './tools/ai-operations/procurement/procurementTimeline.js';
+import { explainPurchaseOrderTool } from './tools/ai-operations/procurement/explainPurchaseOrder.js';
 import { CapClientError } from './clients/capClient.js';
 import { logger } from './config/logger.js';
 
@@ -86,6 +90,9 @@ const tools = [
   supplierSpendSummaryTool,
   compareSupplierQuotesTool,
   summarizeInvoiceDiscrepanciesTool,
+  procurementHealthCheckTool,
+  procurementTimelineTool,
+  explainPurchaseOrderTool,
 
   // Pricing Intelligence
   getLastPurchasePriceTool,

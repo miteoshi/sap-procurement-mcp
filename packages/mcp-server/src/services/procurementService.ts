@@ -4,6 +4,7 @@ import { VendorService } from './sap-operations/vendors/vendorService.js';
 import { PurchaseOrderService } from './sap-operations/purchase-orders/purchaseOrderService.js';
 import { InventoryService } from './sap-operations/inventory/inventoryService.js';
 import { AiVendorService } from './ai-operations/vendors/aiVendorService.js';
+import { AiProcurementService } from './ai-operations/procurement/aiProcurementService.js';
 import { PricingService } from './sap-operations/pricing/pricingService.js';
 import { QuotationService, QuotationFilters } from './sap-operations/quotations/quotationService.js';
 import { InvoiceService } from './sap-operations/invoices/invoiceService.js';
@@ -20,6 +21,7 @@ export class ProcurementService {
   private readonly inventoryService: InventoryService;
   private readonly pricingService: PricingService;
   private readonly aiVendorService: AiVendorService;
+  private readonly aiProcurementService: AiProcurementService;
   private readonly quotationService: QuotationService;
   private readonly invoiceService: InvoiceService;
 
@@ -27,10 +29,11 @@ export class ProcurementService {
     this.vendorService = new VendorService(this.client);
     this.inventoryService = new InventoryService(this.client);
     this.pricingService = new PricingService(this.client);
+    this.aiVendorService = new AiVendorService(this.client);
+    this.aiProcurementService = new AiProcurementService(this.client);
     this.quotationService = new QuotationService(this.client);
     this.invoiceService = new InvoiceService(this.client);
     this.purchaseOrderService = new PurchaseOrderService(this.client, this.vendorService, this.inventoryService, this.pricingService, this.quotationService);
-    this.aiVendorService = new AiVendorService(this.client);
   }
 
   // --- Vendor Methods ---
@@ -68,6 +71,25 @@ export class ProcurementService {
 
   async getVendorPerformance(vendorId: string): Promise<{ totalOrders: number; fulfilledOrders: number; cancelledOrders: number }> {
     return this.aiVendorService.getVendorPerformance(vendorId);
+  }
+
+  // --- AI Procurement Operations ---
+
+  async getProcurementHealth(): Promise<{
+    blockedInvoices: number;
+    partiallyReceivedPOs: number;
+    unreleasedPOs: number;
+    expiredQuotations: number;
+  }> {
+    return this.aiProcurementService.getProcurementHealth();
+  }
+
+  async getProcurementTimeline(poNumberOrId: string): Promise<any> {
+    return this.aiProcurementService.getProcurementTimeline(poNumberOrId);
+  }
+
+  async explainPurchaseOrder(poNumberOrId: string): Promise<any> {
+    return this.aiProcurementService.explainPurchaseOrder(poNumberOrId);
   }
 
   // --- Purchase Order Methods ---
