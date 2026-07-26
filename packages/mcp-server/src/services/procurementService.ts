@@ -144,8 +144,12 @@ export class ProcurementService {
   }
 
   // --- Pricing Methods ---
-  getPricingService(): PricingService {
-    return this.pricingService;
+  async getVendorMaterialPrice(vendorId: string, materialId: string): Promise<number | undefined> {
+    return this.pricingService.getVendorMaterialPrice(vendorId, materialId);
+  }
+
+  async getLastPurchasePrice(vendorId: string, materialId: string): Promise<number | undefined> {
+    return this.pricingService.getLastPurchasePrice(vendorId, materialId);
   }
 
   // --- Quotation Methods ---

@@ -21,7 +21,7 @@ export const getLastPurchasePriceTool = {
       throw new Error(`Material '${input.materialId}' not found in inventory.`);
     }
 
-    const price = await service.getPricingService().getLastPurchasePrice(input.vendorId, inventoryItem.ID);
+    const price = await service.getLastPurchasePrice(input.vendorId, inventoryItem.ID);
 
     return {
       success: true,

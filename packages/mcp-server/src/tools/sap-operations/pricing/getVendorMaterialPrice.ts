@@ -21,7 +21,7 @@ export const getVendorMaterialPriceTool = {
       throw new Error(`Material '${input.materialId}' not found in inventory.`);
     }
 
-    const price = await service.getPricingService().getVendorMaterialPrice(input.vendorId, inventoryItem.ID);
+    const price = await service.getVendorMaterialPrice(input.vendorId, inventoryItem.ID);
 
     return {
       success: true,
