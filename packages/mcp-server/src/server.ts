@@ -5,6 +5,18 @@ import { z } from 'zod';
 import 'dotenv/config';
 
 import { ProcurementService } from './services/procurementService.js';
+import { FmcgService } from './services/fmcg-operations/fmcgService.js';
+import { searchFmcgProductsTool } from './tools/fmcg-operations/searchFmcgProducts.js';
+import { getFmcgProductDetailsTool } from './tools/fmcg-operations/getFmcgProductDetails.js';
+import { getActiveFmcgSchemesTool } from './tools/fmcg-operations/getActiveFmcgSchemes.js';
+import { searchRetailersTool } from './tools/fmcg-operations/searchFmcgRetailers.js';
+import { startRetailInteractionTool } from './tools/fmcg-operations/startRetailInteraction.js';
+import { addRetailInteractionMessageTool } from './tools/fmcg-operations/addRetailInteractionMessage.js';
+import { captureProductInterestTool } from './tools/fmcg-operations/captureFmcgProductInterest.js';
+import { createRetailFollowUpTool } from './tools/fmcg-operations/createRetailFollowUp.js';
+import { completeRetailInteractionTool } from './tools/fmcg-operations/completeRetailInteraction.js';
+import { listRetailInteractionsTool } from './tools/fmcg-operations/listRetailInteractions.js';
+import { getRetailInteractionTool } from './tools/fmcg-operations/getRetailInteraction.js';
 import { searchVendorsTool } from './tools/sap-operations/vendors/searchVendors.js';
 import { getVendorTool } from './tools/sap-operations/vendors/getVendor.js';
 import { createVendorTool } from './tools/sap-operations/vendors/createVendor.js';
@@ -49,6 +61,7 @@ import { CapClientError } from './clients/capClient.js';
 import { logger } from './config/logger.js';
 
 const service = new ProcurementService();
+const fmcgService = new FmcgService();
 const tools = [
   // SAP Operations
   searchVendorsTool,
@@ -96,8 +109,35 @@ const tools = [
 
   // Pricing Intelligence
   getLastPurchasePriceTool,
-  getVendorMaterialPriceTool
+  getVendorMaterialPriceTool,
+
+  // FMCG retail sales domain (FMCGDATA)
+  searchFmcgProductsTool,
+  getFmcgProductDetailsTool,
+  getActiveFmcgSchemesTool,
+  searchRetailersTool,
+  startRetailInteractionTool,
+  addRetailInteractionMessageTool,
+  captureProductInterestTool,
+  createRetailFollowUpTool,
+  completeRetailInteractionTool,
+  listRetailInteractionsTool,
+  getRetailInteractionTool,
 ];
+
+const fmcgToolNames = new Set([
+  'search_fmcg_products',
+  'get_fmcg_product_details',
+  'get_active_fmcg_schemes',
+  'search_fmcg_retailers',
+  'start_retail_interaction',
+  'add_retail_interaction_message',
+  'capture_fmcg_product_interest',
+  'create_retail_follow_up',
+  'complete_retail_interaction',
+  'list_retail_interactions',
+  'get_retail_interaction',
+]);
 
 const server = new Server(
   { name: 'procurement-mcp', version: '1.0.0' },
@@ -125,7 +165,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const parsedInput = tool.inputSchema.parse(request.params.arguments);
     // handler signatures differ per tool only in the schema type; cast is safe
     // because we just validated with that exact tool's schema.
-    const result = await (tool.handler as any)(service, parsedInput);
+    const domainService = fmcgToolNames.has(tool.name) ? fmcgService : service;
+    const result = await (tool.handler as any)(domainService, parsedInput);
     return { content: [{ type: 'text', text: JSON.stringify(result) }] };
   } catch (err) {
     // Never leak raw stack traces / internal errors back to the LLM context.

@@ -1,0 +1,7 @@
+ID,schemeCode,name,description,discountType,discountValue,minQuantity,validFrom,validTo,isActive
+f3000000-0000-4000-8000-000000000001,SCH-OIL-10,Oil category slab offer,Buy 10 units and get 5% off eligible oil SKUs.,PERCENTAGE,5,10,2026-11-01,2026-11-30,true
+f3000000-0000-4000-8000-000000000002,SCH-COLA-CASE,FizzUp case deal,Buy 24 bottles/cans and get 2 units free.,FREE_UNITS,2,24,2026-11-01,2026-11-30,true
+f3000000-0000-4000-8000-000000000003,SCH-STAPLES-3,Staples bulk order,Flat INR 75 off on orders of 20 eligible packs.,FIXED_AMOUNT,75,20,2026-11-01,2026-12-15,true
+f3000000-0000-4000-8000-000000000004,SCH-HOME-5,Home care retailer offer,5% off when ordering 12 eligible units.,PERCENTAGE,5,12,2026-10-15,2026-11-30,true
+f3000000-0000-4000-8000-000000000005,SCH-PERSONAL-12,Personal care combo,Buy 12 eligible packs and save INR 100.,FIXED_AMOUNT,100,12,2026-11-01,2026-11-20,true
+f3000000-0000-4000-8000-000000000006,SCH-SNACKS-50,Snack display scheme,Buy 50 packs and receive 5 free packs.,FREE_UNITS,5,50,2026-11-01,2026-11-30,true

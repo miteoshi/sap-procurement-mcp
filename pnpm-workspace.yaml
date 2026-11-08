@@ -3,5 +3,15 @@ packages:
 allowBuilds:
   better-sqlite3: true
   esbuild: true
+  sharp: true
+  unrs-resolver: true
+  msw: false
 minimumReleaseAgeExclude:
   - pnpm@11.15.0
+  - '@ai-sdk/anthropic@4.0.99'
+  - '@ai-sdk/gateway@4.0.138'
+  - '@ai-sdk/mcp@2.0.93'
+  - '@ai-sdk/provider-utils@5.0.76'
+  - '@ai-sdk/provider@4.0.37'
+  - ai@7.0.165
+  - hono@4.13.17

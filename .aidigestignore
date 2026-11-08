@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.git/
+.next/
+dist/
+build/
+coverage/
+*.log

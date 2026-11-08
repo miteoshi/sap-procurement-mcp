@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   CAP_SERVICE_URL: z.string().url(),
+  RETAIL_SERVICE_URL: z.string().url().optional(),
   // Client-credentials OAuth against XSUAA. In local/dev these can be
   // dummy values because cap-service runs with mocked auth.
   XSUAA_CLIENT_ID: z.string().min(1),

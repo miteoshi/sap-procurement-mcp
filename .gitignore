@@ -92,3 +92,17 @@ claude_desktop_config.json
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+
+# =========================
+# Next.js (chat-web)
+# =========================
+.next/
+out/
+next-env.d.ts
+
+# =========================
+# Chat backend local data
+# =========================
+packages/chat-backend/data/
+*.sqlite-journal

@@ -23,6 +23,8 @@ export class CapClientError extends Error {
 export class CapClient {
   private readonly authProvider = new AuthTokenProvider();
 
+  constructor(private readonly baseUrl: string = env.CAP_SERVICE_URL) {}
+
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
     return pRetry(() => this.request<T>('GET', path, { params }), {
       retries: 2,
@@ -46,7 +48,7 @@ export class CapClient {
     path: string,
     options?: { params?: Record<string, string>; body?: unknown }
   ): Promise<T> {
-    const url = new URL(`${env.CAP_SERVICE_URL}${path}`);
+    const url = new URL(`${this.baseUrl}${path}`);
 
     //for get requests ->
     //eg http://localhost:4004/odata/v4/procurement/Vendors
@@ -79,13 +81,7 @@ export class CapClient {
         ).toString("base64")}`;
       }
 
-      logger.info(
-        {
-          url: url.toString(),
-          headers,
-        },
-        "Outgoing CAP request"
-      );
+      logger.info({ method, url: url.toString() }, "Outgoing CAP request");
       // console.error("URL:", url.toString());
       // console.error("HEADERS:", headers);
 

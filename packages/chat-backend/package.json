@@ -1,0 +1,31 @@
+{
+  "name": "chat-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BFF between the chat UI and the procurement/FMCG MCP server (spawned over stdio).",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.99",
+    "@ai-sdk/mcp": "^2.0.93",
+    "@hono/node-server": "^2.1.6",
+    "ai": "^7.0.165",
+    "dotenv": "^18.0.9",
+    "hono": "^4.13.17",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

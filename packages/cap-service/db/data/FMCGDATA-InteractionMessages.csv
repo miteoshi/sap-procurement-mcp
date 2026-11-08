@@ -1,0 +1,5 @@
+ID,interaction_ID,role,content,createdAt
+f7000000-0000-4000-8000-000000000001,f6000000-0000-4000-8000-000000000001,USER,Do you have the Sunrise sunflower oil 1 litre pack and what is the current retailer price?,2026-11-06T10:30:10Z
+f7000000-0000-4000-8000-000000000002,f6000000-0000-4000-8000-000000000001,ASSISTANT,The 1 litre pack is available. The current retailer price is INR 128 and MRP is INR 145.,2026-11-06T10:30:20Z
+f7000000-0000-4000-8000-000000000003,f6000000-0000-4000-8000-000000000001,USER,I may take 20 bottles. Is there any scheme?,2026-11-06T10:31:00Z
+f7000000-0000-4000-8000-000000000004,f6000000-0000-4000-8000-000000000001,ASSISTANT,The November oil scheme gives 5% off at 10 units. I can record your interest in 20 bottles.,2026-11-06T10:31:15Z

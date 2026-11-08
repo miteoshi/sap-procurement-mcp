@@ -1,0 +1,13 @@
+ID,sku,name,brand,category,description,packSize,unit,stockQuantity,reorderLevel,isActive
+f1000000-0000-4000-8000-000000000001,FMCG-001,Sunrise Refined Sunflower Oil 1L,Sunrise,Edible Oil,Refined sunflower oil for everyday cooking.,1 L,BOTTLE,840,120,true
+f1000000-0000-4000-8000-000000000002,FMCG-002,Sunrise Refined Sunflower Oil 5L,Sunrise,Edible Oil,Family pack refined sunflower oil.,5 L,JAR,260,40,true
+f1000000-0000-4000-8000-000000000003,FMCG-003,DailyGold Atta 5kg,DailyGold,Staples,"Whole wheat flour, chakki fresh style.",5 kg,BAG,520,80,true
+f1000000-0000-4000-8000-000000000004,FMCG-004,DailyGold Toor Dal 1kg,DailyGold,Pulses,Premium split pigeon peas.,1 kg,BAG,390,60,true
+f1000000-0000-4000-8000-000000000005,FMCG-005,FizzUp Cola 750ml,FizzUp,Beverages,Carbonated cola soft drink.,750 ml,BOTTLE,1800,300,true
+f1000000-0000-4000-8000-000000000006,FMCG-006,FizzUp Orange 250ml,FizzUp,Beverages,Orange flavoured carbonated drink.,250 ml,CAN,2400,400,true
+f1000000-0000-4000-8000-000000000007,FMCG-007,FreshDrop Dishwash Liquid 500ml,FreshDrop,Home Care,Lemon dishwashing liquid.,500 ml,BOTTLE,610,100,true
+f1000000-0000-4000-8000-000000000008,FMCG-008,FreshDrop Detergent Powder 2kg,FreshDrop,Home Care,Everyday detergent powder.,2 kg,PACK,430,75,true
+f1000000-0000-4000-8000-000000000009,FMCG-009,GlowCare Bath Soap 4x100g,GlowCare,Personal Care,Value pack of four bathing soaps.,4 x 100 g,PACK,950,150,true
+f1000000-0000-4000-8000-000000000010,FMCG-010,GlowCare Shampoo 180ml,GlowCare,Personal Care,Daily care shampoo.,180 ml,BOTTLE,275,50,true
+f1000000-0000-4000-8000-000000000011,FMCG-011,Crunchies Salted Chips 52g,Crunchies,Snacks,Crispy salted potato chips.,52 g,PACK,1500,250,true
+f1000000-0000-4000-8000-000000000012,FMCG-012,Crunchies Masala Chips 52g,Crunchies,Snacks,Spicy masala potato chips.,52 g,PACK,1320,220,true

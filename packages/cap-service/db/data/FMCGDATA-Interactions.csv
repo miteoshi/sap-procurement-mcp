@@ -1,0 +1,2 @@
+ID,interactionNumber,retailer_ID,channel,status,startedAt,endedAt,summary,outcome,followUpRequired
+f6000000-0000-4000-8000-000000000001,INT-2026-0001,f5000000-0000-4000-8000-000000000001,VOICE,COMPLETED,2026-11-06T10:30:00Z,2026-11-06T10:34:00Z,Retailer asked about the November sunflower oil offer and availability of 1L bottles. Interested in 20 bottles; requested a callback to confirm delivery slot.,FOLLOW_UP_REQUIRED,true

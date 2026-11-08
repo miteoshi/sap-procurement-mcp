@@ -1,0 +1,6 @@
+ID,retailerCode,name,contactName,phone,email,city,state,channel,status
+f5000000-0000-4000-8000-000000000001,RTL-AMD-001,Shreeji General Stores,Kunal Patel,+91-9876501001,kunal@shreejistores.example,Ahmedabad,Gujarat,KIRANA,ACTIVE
+f5000000-0000-4000-8000-000000000002,RTL-MUM-002,Metro Mart Andheri,Neha Shah,+91-9876501002,neha@metromart.example,Mumbai,Maharashtra,SUPERMARKET,ACTIVE
+f5000000-0000-4000-8000-000000000003,RTL-PUN-003,Patil Wholesale Depot,Sanjay Patil,+91-9876501003,sanjay@patildepot.example,Pune,Maharashtra,WHOLESALER,ACTIVE
+f5000000-0000-4000-8000-000000000004,RTL-JAI-004,Pink City Kirana,Ritu Sharma,+91-9876501004,ritu@pinkcitykirana.example,Jaipur,Rajasthan,KIRANA,ACTIVE
+f5000000-0000-4000-8000-000000000005,RTL-SUR-005,Udhna Super Bazaar,Amit Desai,+91-9876501005,amit@udhnabazaar.example,Surat,Gujarat,SUPERMARKET,ACTIVE
