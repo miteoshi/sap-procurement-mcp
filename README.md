@@ -90,6 +90,9 @@ cp packages/chat-web/.env.example packages/chat-web/.env.local
 
 ### Run (four terminals)
 ```bash
+cd packages/cap-service
+
+pnpm exec cds deploy --to sqlite:db.sqlite
 pnpm --filter cap-service watch              # 1. CAP service on :4004
 pnpm --filter mcp-server build               # 2. build once; the backend launches it itself
 pnpm --filter chat-backend dev               # 3. API on :8787
