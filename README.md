@@ -57,6 +57,12 @@ cap-service (SAP CAP)
 - An API key for one LLM provider: Anthropic
 - Chrome, Edge or Safari for voice (needs an internet connection)
 
+### Clone the FMCG branch from this repo
+```
+git clone --branch FMCG --single-branch --depth 1 https://github.com/miteoshi/sap-procurement-mcp.git
+
+```
+
 ### Install
 ```bash
 pnpm install
